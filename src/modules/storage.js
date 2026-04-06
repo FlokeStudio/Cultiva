@@ -8,23 +8,49 @@ let _settingsCache = {};
 let _isInitialized = false;
 let _currentUserId = null;
 
+function validateHabit(habit) {
+  if (!habit || typeof habit !== 'object') {
+    throw new Error('Invalid habit: must be an object');
+  }
+  if (!habit.id || typeof habit.id !== 'string') {
+    throw new Error('Invalid habit: id must be a non-empty string');
+  }
+  if (!habit.name || typeof habit.name !== 'string' || habit.name.length > 100) {
+    throw new Error('Invalid habit: name must be a string (1-100 chars)');
+  }
+  if (habit.progress !== undefined && (typeof habit.progress !== 'number' || habit.progress < 0)) {
+    throw new Error('Invalid habit: progress must be a non-negative number');
+  }
+  return true;
+}
+
+function validateSettings(settings) {
+  if (!settings || typeof settings !== 'object') {
+    throw new Error('Invalid settings: must be an object');
+  }
+  return true;
+}
+
 export const storage = {
   async init() {
     if (_isInitialized) return;
-    
-    // 1. Migration from localStorage (one-time)
+
     if (!localStorage.getItem(MIGRATION_FLAG)) {
       console.log('[Storage] Migrating localStorage -> IndexedDB...');
       try {
         const habitsJson = localStorage.getItem('cultiva-habits');
         if (habitsJson) {
           const habits = JSON.parse(habitsJson);
-          for (const h of habits) await db.put('habits', h);
+          for (const h of habits) {
+            validateHabit(h); 
+            await db.put('habits', h);
+          }
           localStorage.removeItem('cultiva-habits');
         }
         const settingsJson = localStorage.getItem('cultiva-settings');
         if (settingsJson) {
           const settings = JSON.parse(settingsJson);
+          validateSettings(settings);
           await db.put('settings', { key: 'cultiva-settings', value: settings });
           localStorage.removeItem('cultiva-settings');
         }
@@ -35,18 +61,16 @@ export const storage = {
       }
     }
 
-    // 2. CRITICAL FIX: Check for existing session on startup
     try {
         const session = await db.get('sessions', SESSION_KEY);
         if (session) {
-            _currentUserId = session.email; // Восстанавливаем контекст пользователя
+            _currentUserId = session.email;
             console.log('[Storage] Restored session for:', _currentUserId);
         }
     } catch (e) {
         console.error('[Storage] Session check failed:', e);
     }
 
-    // 3. Load habits filtered by the restored user
     await this._loadFromDB();
     _isInitialized = true;
     console.log('[Storage] System ready');
@@ -54,16 +78,16 @@ export const storage = {
 
   async _loadFromDB() {
     try {
-      const allHabits = await db.getAll('habits');
-      const settingsRecord = await db.get('settings', 'cultiva-settings');
-      _settingsCache = settingsRecord ? settingsRecord.value : {};
+      const userId = _currentUserId || null;
       
-      // Filter habits: if logged in show user's habits, else show guest habits
-      _habitsCache = _currentUserId
-        ? allHabits.filter(h => h.userId === _currentUserId)
-        : allHabits.filter(h => !h.userId);
+      const userHabits = await db.getByIndex('habits', 'userId', userId);
+      const settingsRecord = await db.get('settings', 'cultiva-settings');
+      
+      _settingsCache = settingsRecord ? settingsRecord.value : {};
+      _habitsCache = userHabits || [];
     } catch (e) {
       console.error('[Storage] Failed to load from IndexedDB:', e);
+
       const h = localStorage.getItem('cultiva-habits');
       if (h) _habitsCache = JSON.parse(h);
       const s = localStorage.getItem('cultiva-settings');
@@ -77,38 +101,66 @@ export const storage = {
 
   async setCurrentUser(userId) {
     _currentUserId = userId;
-    await this._loadFromDB(); // Перезагружаем кэш
+    await this._loadFromDB();
   },
 
   async saveHabits(habits) {
-    // 1. Обновляем кэш
-    const myHabits = habits.map(h => ({ ...h, userId: _currentUserId || null }));
+
+    for (const h of habits) {
+      validateHabit(h);
+    }
+
+    const myHabits = habits.map(h => ({ 
+      ...h, 
+      userId: _currentUserId || null, 
+      updatedAt: Date.now() 
+    }));
+    
     _habitsCache = myHabits;
 
-    // 2. Безопасное сохранение в БД
-    // Получаем все привычки из БД, убираем старые привычки ТЕКУЩЕГО юзера, добавляем новые
     try {
-        const allHabitsInDB = await db.getAll('habits');
-        const otherHabits = allHabitsInDB.filter(h => h.userId !== _currentUserId);
+      const dbInstance = await db.open();
+      
+      await new Promise((resolve, reject) => {
+        const tx = dbInstance.transaction('habits', 'readwrite');
+        const store = tx.objectStore('habits');
         
-        // Очистка стора и перезапись (самый надежный способ при удалении)
-        await db.clear('habits');
-        
-        const finalList = [...otherHabits, ...myHabits];
-        for (const h of finalList) {
-            await db.put('habits', h);
+        if (_currentUserId && store.indexNames.contains('userId')) {
+          const index = store.index('userId');
+          const cursorRequest = index.openCursor(IDBKeyRange.only(_currentUserId));
+          
+          cursorRequest.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              cursor.delete();
+              cursor.continue();
+            }
+          };
         }
         
-        // Бэкап
-        localStorage.setItem('cultiva-habits', JSON.stringify(finalList));
+        myHabits.forEach(habit => store.put(habit));
+        
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      localStorage.setItem('cultiva-habits', JSON.stringify(myHabits));
+      
     } catch (e) {
-        console.error('[Storage] Save failed:', e);
+      console.error('[Storage] Transaction failed, falling back to localStorage:', e);
+      localStorage.setItem('cultiva-habits', JSON.stringify(myHabits));
     }
   },
 
   async set(key, value) {
+    validateSettings({ [key]: value });
     _settingsCache[key] = value;
-    await db.put('settings', { key, value });
+    
+    try {
+      await db.put('settings', { key, value });
+    } catch (e) {
+      console.error('[Storage] Settings IDB write failed:', e);
+    }
     localStorage.setItem('cultiva-settings', JSON.stringify(_settingsCache));
   }
 };
