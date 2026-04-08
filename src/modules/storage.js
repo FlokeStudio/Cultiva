@@ -96,7 +96,7 @@ export const storage = {
   },
 
   getHabits() { return _habitsCache; },
-  get(key) { return _settingsCache[key] || null; },
+  async get(key) { return _settingsCache[key] || null; },
   getCurrentUserId() { return _currentUserId; },
 
   async setCurrentUser(userId) {

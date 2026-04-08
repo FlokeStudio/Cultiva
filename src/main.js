@@ -1,4 +1,3 @@
-import { onboarding } from './modules/onboarding.js';
 import { auth } from './modules/auth.js'; 
 import './styles/main.css';
 import { GROWTH_STAGES, LEGACY_THRESHOLD, MAX_ACTIVE_HABITS } from './core/config.js';
@@ -75,12 +74,12 @@ const AVATAR_DATA = {
         { id: 'slate-1', css: 'linear-gradient(135deg, #667db6 0%, #0082c8 50%, #667db6 100%)' }
     ],
     emojis: [
-        '🌱', '🌿', '🍀', '😊', '😋', '😶‍🌫️', '🌴', '🌵', '🌾', '', '🌸', '🌺', '🌷', '', '🍄', '🍉', '🍋', '', '🍏', '🍑',
-        '🦊', '🐶', '🐼', '', '🐯', '🐵', '🐝', '',
-        '', '🎮', '💻', '⌨️', '📷', '🎸', '', '🧘', '🧠', '💡', '⏰', '', '🚀', '🛸', '🌍', '', '💍', '🎁',
-        '✨', '⭐', '🌟', '🌙', '️', '⚡', '🔥', '💫', '🥇', '', '☮️', '🕊️',
+        '🌱', '🌿', '🍀', '😊', '😋', '😶‍🌫️', '🌴', '🌵', '🌾', '🤪', '🌸', '🌺', '🌷', '🥳', '🍄', '🍉', '🍋', '👻', '🍏', '🍑',
+        '🦊', '🐶', '🐼', '', '🐯', '🐵', '🐝', '🐋',
+        '', '🎮', '💻', '⌨️', '📷', '🎸', '🧑‍🚀', '🧘', '🧠', '💡', '⏰', '👾', '🚀', '🛸', '🌍', '🧊', '💍', '🎁',
+        '✨', '⭐', '🌟', '🌙', '️🌊', '⚡', '🔥', '💫', '🥇', '🍃', '☮️', '🕊️',
         '😎', '🤠', '🧐', '', '😴', '👽', '💀', '👻', '😈', '🤡', '', '🫢',
-        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '❣️', '💕', '', '💓', '', '💖', '', '💝', ''
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '❣️', '💕', '', '💓', '', '💖', '', '💝', '❤️‍🔥'
     ]
 };
 
@@ -141,32 +140,76 @@ const TRANSLATIONS = {
 };
 
 /* ============================================
-   SETTINGS LOGIC
+   SETTINGS LOGIC 
    ============================================ */
-function loadSettings() {
-    const saved = storage.get('cultiva-settings');
-    if (saved) settings = { ...settings, ...saved };
+async function loadSettings() {
+    try {
+        let saved = await storage.get('cultiva-settings');
+        
+        if (!saved) {
+            const ls = localStorage.getItem('cultiva-settings');
+            if (ls) saved = JSON.parse(ls);
+        }
+        
+        console.log('Loaded settings:', saved);
+        
+        if (saved && typeof saved === 'object') {
+            if (saved.lang) settings.lang = saved.lang;
+            if (saved.theme) settings.theme = saved.theme;  
+            if (typeof saved.showTrophies === 'boolean') settings.showTrophies = saved.showTrophies;
+            if (typeof saved.focusMode === 'boolean') settings.focusMode = saved.focusMode;
+            if (saved.avatar) settings.avatar = { ...settings.avatar, ...saved.avatar };
+        }
+    } catch (err) {
+        console.warn('Failed to load settings:', err);
+    }
 }
+
+function saveSettings() {
+    console.log('Saving settings (before):', settings);
+    
+    if (settings.theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        settings.theme = prefersDark ? 'dark' : 'light';
+        console.log('Resolved "auto" to:', settings.theme);
+    }
+    
+    storage.set('cultiva-settings', settings);
+    localStorage.setItem('cultiva-settings', JSON.stringify(settings));
+    
+    console.log('Saved settings (after):', settings);
+    
+    applySettings();
+    renderGarden();
+} 
 
 function applySettings() {
     if (langSelect) langSelect.value = settings.lang;
     applyTranslations(settings.lang);
-    document.body.classList.remove('theme-light', 'theme-dark');
-    if (settings.theme === 'light') document.body.classList.add('theme-light');
-    else if (settings.theme === 'dark') document.body.classList.add('theme-dark');
+    
+    document.body.classList.remove('theme-light', 'theme-dark', 'theme-pink', 'theme-moon');
+    
+    if (settings.theme === 'light') {
+        document.body.classList.add('theme-light');
+    } else if (settings.theme === 'dark') {
+        document.body.classList.add('theme-dark');
+    } else if (settings.theme === 'pink') {
+        document.body.classList.add('theme-pink');
+    } else if (settings.theme === 'moon') {
+        document.body.classList.add('theme-moon');
+    } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+    }
+    
     if (themeSelect) themeSelect.value = settings.theme;
+    
     const trophySection = document.getElementById('trophy-section');
     if (trophySection) trophySection.classList.toggle('hidden', !settings.showTrophies);
     if (trophyToggle) trophyToggle.checked = settings.showTrophies;
     document.body.classList.toggle('focus-mode', settings.focusMode);
     if (focusToggle) focusToggle.checked = settings.focusMode;
     renderHeaderAvatar();
-}
-
-function saveSettings() {
-    storage.set('cultiva-settings', settings);
-    applySettings();
-    renderGarden();
 }
 
 /* ============================================
@@ -470,7 +513,7 @@ function openStats(id) {
    ============================================ */
 function exportData() {
     const t = TRANSLATIONS[settings.lang];
-    const data = { habits: habits.getAll(), exportedAt: new Date().toISOString(), version: '0.2.0' };
+    const data = { habits: habits.getAll(), exportedAt: new Date().toISOString(), version: '0.2.1' };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -558,10 +601,10 @@ async function updateAuthUI() {
         }
     }
     if (isLoggedIn) {
-    document.body.classList.add('authenticated');
-} else {
-    document.body.classList.remove('authenticated');
-}
+        document.body.classList.add('authenticated');
+    } else {
+        document.body.classList.remove('authenticated');
+    }
 
     renderHeaderAvatar();
 }
@@ -641,11 +684,11 @@ function initEvents() {
     });
     
     document.addEventListener('keydown', (e) => {
-    if (e.key === '?' && !document.activeElement.matches('input, textarea')) {
-        e.preventDefault();
-        window.location.href = '/src/pages/keyboard.html';
-    }
-});
+        if (e.key === '?' && !document.activeElement.matches('input, textarea')) {
+            e.preventDefault();
+            window.location.href = './pages/keyboard.html';
+        }
+    });
 
     document.querySelectorAll('input[name="track-type"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -765,17 +808,15 @@ async function init() {
         await storage.init();
         await auth.init();
         
-        loadSettings();
+        await loadSettings();
         applySettings();
         
         renderGarden();
-        
         initEvents();
         initAvatarPicker();
-        
         await updateAuthUI();
         
-        console.log('Cultiva v0.2.0 initialized');
+        console.log('Cultiva v0.2.1 initialized');
     } catch (err) {
         console.error('Init failed:', err);
     }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Cultiva - Grow your habits, grow yourself">
     <title>Home | Cultiva</title>
-    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="/styles/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
 </head>
 <body>
@@ -20,7 +20,7 @@
     <header class="app-header">
         <div class="header-content">
             <div class="header-brand">
-                <h1><a href="landing.html" style="color: inherit; text-decoration: none;">Cultiva</a></h1>
+                <h1><a href="/index.html" style="color: inherit; text-decoration: none;">Cultiva</a></h1>
             </div>
             <div class="header-actions">
                 <a href="/pages/changelog.html" class="header-link" data-i18n="whatsNew">What's New</a>
@@ -166,7 +166,15 @@
                 <div class="settings-group">
                     <h3 class="settings-group-title" data-i18n="appearance">Appearance & Language</h3>
                     <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="language">Language</span><span class="setting-desc" data-i18n="languageDesc">Interface language</span></div><select id="lang-select" class="select-input select-small"><option value="en">English</option><option value="ru">Русский</option></select></div>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="theme">Theme</span><span class="setting-desc" data-i18n="themeDesc">Choose your preferred look</span></div><select id="theme-select" class="select-input select-small"><option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="theme">Theme</span><span class="setting-desc" data-i18n="themeDesc">Choose your preferred look</span></div>
+                        <select id="theme-select" class="select-input select-small">
+                            <option value="auto">Auto (System)</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="pink">Pink</option>
+                            <option value="moon">Moon</option>
+                        </select>
+                    </div>
                     <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="showTrophy">Show Trophy Garden</span><span class="setting-desc" data-i18n="showTrophyDesc">Display completed trees (365+ days)</span></div><label class="toggle-switch"><input type="checkbox" id="toggle-trophies"><span class="toggle-slider"></span></label></div>
                     <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="focusMode">Focus Mode</span><span class="setting-desc" data-i18n="focusModeDesc">Minimal UI for distraction-free tracking</span></div><label class="toggle-switch"><input type="checkbox" id="toggle-focus"><span class="toggle-slider"></span></label></div>
                 </div>
@@ -249,10 +257,10 @@
                 <a href="/pages/privacy.html">Privacy</a>
                 <a href="https://github.com/krwg/cultiva" target="_blank" rel="noopener">GitHub</a>
             </nav>
-            <div class="footer-brand"><span class="footer-version">[0.2.0] Aspen 2026</span></div>
+            <div class="footer-brand"><span class="footer-version">[0.2.1] Aspen</span></div>
         </div>
     </footer>
 
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="./main.js"></script>
 </body>
 </html>

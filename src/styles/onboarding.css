@@ -6,8 +6,8 @@
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 99999; /* ← УВЕЛИЧЬ: было 9999, стало 99999 */
-    background: rgba(245, 245, 247, 0.95); /* ← Сделай фон плотнее */
+    z-index: 99999; 
+    background: rgba(245, 245, 247, 0.95); 
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     opacity: 0;

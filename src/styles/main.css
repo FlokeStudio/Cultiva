@@ -601,3 +601,97 @@ body:not(.authenticated) .user-avatar-large,
 body:not(.authenticated) #header-avatar {
     background: var(--bg-tertiary) !important;
 }
+
+/* ============================================
+   PINK THEME 
+   ============================================ */
+body.theme-pink {
+  --bg-primary: #fff0f5;
+  --bg-secondary: #ffe4ec;
+  --bg-tertiary: #ffc0cb;
+  --text-primary: #4a001e;
+  --text-secondary: #7a2a4a;
+  --text-tertiary: #9a4a6a;
+  --border-light: #ffb3d1;
+  --border-medium: #ff80b3;
+  --accent-blue: #ff4d94;
+  --accent-blue-hover: #ff1a7a;
+  --accent-purple: #d63384;
+  --accent-pink: #ff69b4;
+  --accent-green: #ff85a2;
+  --accent-red: #ff3366;
+  --shadow-sm: 0 2px 8px rgba(255, 105, 180, 0.1);
+  --shadow-md: 0 4px 16px rgba(255, 105, 180, 0.15);
+  --shadow-lg: 0 8px 32px rgba(255, 105, 180, 0.2);
+  --shadow-xl: 0 12px 48px rgba(255, 105, 180, 0.25);
+  --calendar-0: #ffe4ec;
+  --calendar-1: #ffc0d9;
+  --calendar-2: #ff9bc3;
+  --calendar-3: #ff77ad;
+  --calendar-4: #ff4d94;
+}
+
+body.theme-pink .app-header,
+body.theme-pink .modal-sheet,
+body.theme-pink .habit-card,
+body.theme-pink .settings-group,
+body.theme-pink .btn-secondary {
+  background: var(--bg-primary);
+  border-color: var(--border-light);
+}
+
+body.theme-pink .btn-primary {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+}
+body.theme-pink .btn-primary:hover {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+}
+
+/* ============================================
+   MOON THEME 
+   ============================================ */
+body.theme-moon {
+  --bg-primary: #0f1426;
+  --bg-secondary: #1a1f3a;
+  --bg-tertiary: #252a4a;
+  --text-primary: #e6e6ff;
+  --text-secondary: #b3b3d9;
+  --text-tertiary: #8080b3;
+  --border-light: #33385c;
+  --border-medium: #4d527a;
+  --accent-blue: #7aa2ff;
+  --accent-blue-hover: #99baff;
+  --accent-purple: #b388ff;
+  --accent-pink: #ff88cc;
+  --accent-green: #7fffad;
+  --accent-red: #ff6b8b;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.6);
+  --calendar-0: #1a1f3a;
+  --calendar-1: #2a2f5a;
+  --calendar-2: #3a3f7a;
+  --calendar-3: #4a4f9a;
+  --calendar-4: #7aa2ff;
+}
+
+body.theme-moon .app-header,
+body.theme-moon .modal-sheet,
+body.theme-moon .habit-card,
+body.theme-moon .settings-group,
+body.theme-moon .btn-secondary {
+  background: var(--bg-primary);
+  border-color: var(--border-light);
+}
+
+body.theme-moon .btn-primary {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+}
+body.theme-moon .btn-primary:hover {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+}
+
+body {
+  transition: background-color 0.3s var(--ease-apple), color 0.3s var(--ease-apple);
+}
