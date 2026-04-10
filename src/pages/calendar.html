@@ -6,8 +6,6 @@
     <title>Calendar | Cultiva</title>
     <link rel="stylesheet" href="../styles/main.css">
     <script type="module">
-    // Import TRANSLATIONS from main.js (they're exported there)
-    // Fallback: define minimal set if import fails
     window.TRANSLATIONS = window.TRANSLATIONS || {
         en: {
             backBtn: 'Back', calendar: 'Calendar', sun: 'Sun', mon: 'Mon', tue: 'Tue',
@@ -36,7 +34,7 @@
     }
     .calendar-header { 
         position: sticky; top: 0; z-index: 100; 
-        background: var(--bg-secondary) !important; /* ← Принудительно берём из main.css */
+        background: var(--bg-secondary) !important; 
         backdrop-filter: saturate(180%) blur(20px); 
         -webkit-backdrop-filter: saturate(180%) blur(20px); 
         border-bottom: 1px solid var(--border-light) !important;
@@ -116,7 +114,7 @@
             </div>
             <textarea class="note-input" id="note-input" placeholder="Add a note for this day..."></textarea>
             <div class="note-hints">
-                <span>💡 Auto-saved</span>
+                <span>Auto-saved</span>
                 <span id="holiday-hint" style="display:none">🎉 <span id="holiday-name"></span></span>
             </div>
         </div>
@@ -151,21 +149,19 @@
     
     function getTZName() { const tz = getSavedTZ(); return tz === 'auto' ? undefined : tz; }
     
-    // Получаем "сегодня" строго в выбранном часовом поясе
     function getTodayInTZ() {
         const tz = getTZName();
         const now = new Date();
         return now.toLocaleDateString('en-CA', { timeZone: tz }); // YYYY-MM-DD
     }
 
-    // Форматтеры с учётом пояса
     const fmt = {
         month: (d) => d.toLocaleString(navigator.language, { timeZone: getTZName(), month: 'long', year: 'numeric' }),
         full: (d) => d.toLocaleString(navigator.language, { timeZone: getTZName(), weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
         key: (d) => d.toISOString().split('T')[0]
     };
 
-    // ===== THEME SYNC (FIXED ✅) =====
+    // ===== THEME SYNC =====
     function syncTheme() {
         const theme = getSavedTheme();
         document.body.classList.remove('theme-light', 'theme-dark', 'theme-pink', 'theme-moon');
@@ -209,11 +205,9 @@
 
         const todayStr = getTodayInTZ();
 
-        // Дни прошлого месяца
         const prevMonthLast = new Date(Date.UTC(year, month, 0)).getUTCDate();
         for (let i = startDay - 1; i >= 0; i--) container.appendChild(createDay(prevMonthLast - i, true));
 
-        // Дни текущего месяца
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
             const isToday = dateStr === todayStr;
@@ -232,7 +226,6 @@
             container.appendChild(cell);
         }
 
-        // Дни следующего месяца
         const total = startDay + daysInMonth;
         const remaining = 42 - total;
         for (let day = 1; day <= remaining; day++) container.appendChild(createDay(day, true));
@@ -292,15 +285,12 @@
     else init();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Force re-apply theme after a tiny delay (lets main.css variables load)
     setTimeout(() => {
         syncTheme();
-        // Also re-render calendar to pick up new CSS vars
         renderCalendar();
     }, 100);
 });
 
-// 🌐 i18n FIX: Apply translations to calendar page elements
 function applyCalendarTranslations() {
     const lang = localStorage.getItem('cultiva-lang') || 'en';
     const t = window.TRANSLATIONS?.[lang] || window.TRANSLATIONS?.en;
@@ -318,12 +308,12 @@ function applyCalendarTranslations() {
     });
 }
 
-// Run i18n after DOM is ready
+
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(applyCalendarTranslations, 150);
 });
 
-// Listen for language changes from other tabs
+
 window.addEventListener('storage', (e) => {
     if (e.key === 'cultiva-lang') {
         setTimeout(applyCalendarTranslations, 50);
