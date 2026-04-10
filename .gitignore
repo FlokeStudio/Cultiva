@@ -1,9 +1,84 @@
+# === DEPENDENCIES ===
 node_modules/
+.pnpm-store/
+
+# === BUILD OUTPUTS ===
 dist/
-.DS_Store
-Thumbs.db
+release/
+out/
+build/
+
+# === ELECTRON BUILDER ===
+*.app
+*.dmg
+*.exe
+*.msi
+*.AppImage
+*.snap
+*.deb
+*.rpm
+*.tar.gz
+*.yml
+*.yaml
+builder-effective-config.yaml
+
+# === ENVIRONMENT ===
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# === LOGS ===
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# === OS FILES ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# === IDE & EDITORS ===
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.cproject
+*.sublime-project
+*.sublime-workspace
+
+# === TYPESCRIPT ===
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# === TESTING ===
+coverage/
+.nyc_output/
+
+# === TEMPORARY ===
+tmp/
+temp/
+.cache/
+.parcel-cache/
+
+# === OPTIONAL LOCAL FILES ===
+*.local
+*.local.*
+
+# === OTHER ===
+command.txt
+card.html
 boards
 notes

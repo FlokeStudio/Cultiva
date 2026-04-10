@@ -24,6 +24,35 @@ const themeSelect = document.getElementById('theme-select');
 const trophyToggle = document.getElementById('toggle-trophies');
 const focusToggle = document.getElementById('toggle-focus');
 
+
+// ============================================
+// ⏱️ TIMEZONE UTILS (Fixes date mismatch)
+// ============================================
+function getCultivaTimezone() {
+    const tz = localStorage.getItem('cultiva-timezone') || 'auto';
+    return tz === 'auto' ? undefined : tz;
+}
+
+function formatCultivaDate(dateObj) {
+    const tz = getCultivaTimezone();
+    return new Intl.DateTimeFormat(navigator.language, {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', timeZone: tz
+    }).format(dateObj);
+}
+
+function getLocalISOString(dateObj) {
+    const tz = getCultivaTimezone();
+    // Convert to target timezone, then to ISO-like string for storage
+    const parts = new Intl.DateTimeFormat('en-CA', { 
+        timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' 
+    }).formatToParts(dateObj);
+    const y = parts.find(p => p.type === 'year').value;
+    const m = parts.find(p => p.type === 'month').value;
+    const d = parts.find(p => p.type === 'day').value;
+    return `${y}-${m}-${d}`;
+}
+
 /* ============================================
    STATE
    ============================================ */
@@ -110,7 +139,13 @@ const TRANSLATIONS = {
             health: 'Health', learning: 'Learning', work: 'Work', mindfulness: 'Mindfulness',
             creative: 'Creative', fitness: 'Fitness', social: 'Social', finance: 'Finance',
             hobby: 'Hobby', family: 'Family', career: 'Career', spiritual: 'Spiritual',
-            environment: 'Environment', other: 'Other'
+            environment: 'Environment', other: 'Other',
+            calendar: 'Calendar',
+            holidayRegion: 'Holiday Region',
+holidayRegionDesc: 'Show public holidays for your country',
+        timeFormat: 'Time Format', timeFormatDesc: '12h or 24h clock',
+        timezone: 'Timezone', timezoneDesc: 'Fix calendar & habit timestamps',
+
         }
     },
     ru: {
@@ -131,11 +166,16 @@ const TRANSLATIONS = {
         progressSaved: 'Прогресс сохранён!', removed: 'Удалено', exported: 'Экспортировано!',
         imported: 'Импортировано!', resetDone: 'Данные очищены!', changeAvatar: 'Изменить аватар',
         categories: {
-            health: 'Здоровье', learning: 'Обучение', work: 'Работа', mindfulness: 'Осознанность',
-            creative: 'Творчество', fitness: 'Спорт', social: 'Общение', finance: 'Финансы',
-            hobby: 'Хобби', family: 'Семья', career: 'Карьера', spiritual: 'Духовное',
-            environment: 'Экология', other: 'Другое'
-        }
+        health: 'Здоровье', learning: 'Обучение', work: 'Работа', mindfulness: 'Осознанность',
+        creative: 'Творчество', fitness: 'Спорт', social: 'Общение', finance: 'Финансы',
+        hobby: 'Хобби', family: 'Семья', career: 'Карьера', spiritual: 'Духовное',
+        environment: 'Экология', other: 'Другое',
+        },
+        calendar: 'Календарь',
+        holidayRegion: 'Регион праздников',
+        holidayRegionDesc: 'Показывать государственные праздники вашей страны',
+        timeFormat: 'Формат времени', timeFormatDesc: '12-часовой или 24-часовой',
+        timezone: 'Часовой пояс', timezoneDesc: 'Синхронизировать время привычек и календаря',
     }
 };
 
@@ -163,6 +203,28 @@ async function loadSettings() {
     } catch (err) {
         console.warn('Failed to load settings:', err);
     }
+}
+
+// ⏱️ Time Format Setting
+const timeFormatSelect = document.getElementById('time-format-select');
+if (timeFormatSelect) {
+    timeFormatSelect.value = localStorage.getItem('cultiva-time-format') || 'auto';
+    timeFormatSelect.addEventListener('change', (e) => {
+        localStorage.setItem('cultiva-time-format', e.target.value);
+    });
+}
+
+const holidaySelect = document.getElementById('holiday-select');
+if (holidaySelect) {
+    holidaySelect.value = settings.holidayRegion || 'us';
+    holidaySelect.addEventListener('change', (e) => {
+        settings.holidayRegion = e.target.value;
+        saveSettings();
+        // Перезагрузить календарь если он открыт
+        if (window.location.pathname.includes('calendar.html')) {
+            location.reload();
+        }
+    });
 }
 
 function saveSettings() {
@@ -233,6 +295,19 @@ langSelect?.addEventListener('change', (e) => { settings.lang = e.target.value; 
 themeSelect?.addEventListener('change', (e) => { settings.theme = e.target.value; saveSettings(); });
 trophyToggle?.addEventListener('change', (e) => { settings.showTrophies = e.target.checked; saveSettings(); });
 focusToggle?.addEventListener('change', (e) => { settings.focusMode = e.target.checked; saveSettings(); });
+
+/* ============================================
+   Timezone Setting
+   ============================================ */
+const tzSelect = document.getElementById('tz-select');
+if (tzSelect) {
+    tzSelect.value = localStorage.getItem('cultiva-timezone') || 'auto';
+    tzSelect.addEventListener('change', (e) => {
+        localStorage.setItem('cultiva-timezone', e.target.value);
+        // Обновляем отображение дат/времени в реальном времени
+        if (typeof renderGarden === 'function') renderGarden(); 
+    });
+}
 
 /* ============================================
    USER MENU

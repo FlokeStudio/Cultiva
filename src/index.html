@@ -24,6 +24,7 @@
             </div>
             <div class="header-actions">
                 <a href="/pages/changelog.html" class="header-link" data-i18n="whatsNew">What's New</a>
+                <a href="/pages/calendar.html" class="header-link" data-i18n="calendar" title="Calendar">Calendar</a>
                 <button class="add-btn" id="open-add-modal" aria-label="Add new habit">+</button>
                 
                 <div class="user-menu" id="user-menu">
@@ -174,7 +175,53 @@
                             <option value="pink">Pink</option>
                             <option value="moon">Moon</option>
                         </select>
+
+                
                     </div>
+
+                    <div class="setting-item">
+    <div class="setting-info">
+        <span class="setting-label" data-i18n="holidayRegion">Holiday Region</span>
+        <span class="setting-desc" data-i18n="holidayRegionDesc">Show public holidays for your country</span>
+    </div>
+    <select id="holiday-select" class="select-input select-small">
+        <option value="us">🇺🇸 United States</option>
+        <option value="ru">🇷🇺 Russia</option>
+        <option value="de">🇩🇪 Germany</option>
+        <option value="gb">🇬🇧 United Kingdom</option>
+        <option value="fr">🇫🇷 France</option>
+    </select>
+</div>
+
+<div class="setting-item">
+    <div class="setting-info">
+        <span class="setting-label" data-i18n="timeFormat">Time Format</span>
+        <span class="setting-desc" data-i18n="timeFormatDesc">12h or 24h clock</span>
+    </div>
+    <select id="time-format-select" class="select-input select-small">
+        <option value="auto">Auto (System)</option>
+        <option value="12h">12h (AM/PM)</option>
+        <option value="24h">24h</option>
+    </select>
+</div>
+
+<div class="setting-item">
+    <div class="setting-info">
+        <span class="setting-label" data-i18n="timezone">Timezone</span>
+        <span class="setting-desc" data-i18n="timezoneDesc">Fix calendar & habit timestamps</span>
+    </div>
+    <select id="tz-select" class="select-input select-small">
+        <option value="auto">Auto (System)</option>
+        <option value="UTC">UTC / GMT</option>
+        <option value="Europe/Moscow">Moscow (UTC+3)</option>
+        <option value="Europe/London">London (UTC+0)</option>
+        <option value="Europe/Berlin">Berlin (UTC+1/2)</option>
+        <option value="America/New_York">New York (UTC-5/4)</option>
+        <option value="America/Los_Angeles">Los Angeles (UTC-8/7)</option>
+        <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+        <option value="Asia/Shanghai">Beijing (UTC+8)</option>
+    </select>
+</div>
                     <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="showTrophy">Show Trophy Garden</span><span class="setting-desc" data-i18n="showTrophyDesc">Display completed trees (365+ days)</span></div><label class="toggle-switch"><input type="checkbox" id="toggle-trophies"><span class="toggle-slider"></span></label></div>
                     <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="focusMode">Focus Mode</span><span class="setting-desc" data-i18n="focusModeDesc">Minimal UI for distraction-free tracking</span></div><label class="toggle-switch"><input type="checkbox" id="toggle-focus"><span class="toggle-slider"></span></label></div>
                 </div>
@@ -257,7 +304,7 @@
                 <a href="/pages/privacy.html">Privacy</a>
                 <a href="https://github.com/krwg/cultiva" target="_blank" rel="noopener">GitHub</a>
             </nav>
-            <div class="footer-brand"><span class="footer-version">[0.2.1] Aspen</span></div>
+            <div class="footer-brand"><span class="footer-version">[0.2.2] Aspen</span></div>
         </div>
     </footer>
 

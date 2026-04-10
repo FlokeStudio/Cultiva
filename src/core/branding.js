@@ -8,7 +8,7 @@ export const BRANDING = {
   HABIT_ENGINE: 'GrowthKit',      
   DATABASE: 'IBD2',               
   
-  VERSION: '0.2.0',
+  VERSION: '0.2.2',
   CODENAME: 'Aspen',
   
   KEYS: {
