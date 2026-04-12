@@ -15,7 +15,6 @@ function generateSalt() {
 }
 
 export const auth = {
-  // Вызывается один раз при старте приложения
   init: async function() {
     if (_currentUser) return;
     const session = await db.get('sessions', SESSION_KEY);
@@ -79,7 +78,6 @@ export const auth = {
     }
   },
 
-  // Синхронные методы после init()
   isAuthenticated: function() {
     return !!_currentUser;
   },

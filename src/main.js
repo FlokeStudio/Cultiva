@@ -4,9 +4,9 @@ import { GROWTH_STAGES, LEGACY_THRESHOLD, MAX_ACTIVE_HABITS } from './core/confi
 import { storage } from './modules/storage.js';
 import { habits } from './modules/habits.js';
 
-/* ============================================
-   DOM ELEMENTS
-   ============================================ */
+/* ============================================ */
+/* DOM ELEMENTS                                 */
+/* ============================================ */
 const gardenEl = document.getElementById('garden-container');
 const trophyEl = document.getElementById('trophy-container');
 const countEl = document.getElementById('habit-count');
@@ -24,13 +24,35 @@ const themeSelect = document.getElementById('theme-select');
 const trophyToggle = document.getElementById('toggle-trophies');
 const focusToggle = document.getElementById('toggle-focus');
 
+/* ============================================ */
+/* TIMEZONE UTILS                               */
+/* ============================================ */
 
-// ============================================
-// ⏱️ TIMEZONE UTILS (Fixes date mismatch)
-// ============================================
 function getCultivaTimezone() {
     const tz = localStorage.getItem('cultiva-timezone') || 'auto';
     return tz === 'auto' ? undefined : tz;
+}
+
+function getTodayStr() {
+    const tz = getCultivaTimezone();
+    const now = new Date();
+    
+    if (!tz) {
+        return now.toISOString().split('T')[0];
+    }
+    
+    try {
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: tz,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+        return formatter.format(now);
+    } catch (e) {
+        console.warn('[Main] Failed to get date with timezone, using local:', e);
+        return now.toISOString().split('T')[0];
+    }
 }
 
 function formatCultivaDate(dateObj) {
@@ -43,7 +65,6 @@ function formatCultivaDate(dateObj) {
 
 function getLocalISOString(dateObj) {
     const tz = getCultivaTimezone();
-    // Convert to target timezone, then to ISO-like string for storage
     const parts = new Intl.DateTimeFormat('en-CA', { 
         timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' 
     }).formatToParts(dateObj);
@@ -53,20 +74,24 @@ function getLocalISOString(dateObj) {
     return `${y}-${m}-${d}`;
 }
 
-/* ============================================
-   STATE
-   ============================================ */
+/* ============================================ */
+/* STATE                                        */
+/* ============================================ */
 let settings = { 
     lang: 'en', 
     theme: 'auto', 
     showTrophies: false, 
     focusMode: false,
+    holidayRegion: 'us',
     avatar: { background: 'green', emoji: '🌱' }
 };
 
-/* ============================================
-   AVATAR DATA
-   ============================================ */
+let currentLang = 'en';
+let currentT = {};
+
+/* ============================================ */
+/* AVATAR DATA                                  */
+/* ============================================ */
 const AVATAR_DATA = {
     backgrounds: [
         { id: 'none', name: 'None', css: 'var(--bg-tertiary)' },
@@ -104,84 +129,176 @@ const AVATAR_DATA = {
     ],
     emojis: [
         '🌱', '🌿', '🍀', '😊', '😋', '😶‍🌫️', '🌴', '🌵', '🌾', '🤪', '🌸', '🌺', '🌷', '🥳', '🍄', '🍉', '🍋', '👻', '🍏', '🍑',
-        '🦊', '🐶', '🐼', '', '🐯', '🐵', '🐝', '🐋',
-        '', '🎮', '💻', '⌨️', '📷', '🎸', '🧑‍🚀', '🧘', '🧠', '💡', '⏰', '👾', '🚀', '🛸', '🌍', '🧊', '💍', '🎁',
-        '✨', '⭐', '🌟', '🌙', '️🌊', '⚡', '🔥', '💫', '🥇', '🍃', '☮️', '🕊️',
-        '😎', '🤠', '🧐', '', '😴', '👽', '💀', '👻', '😈', '🤡', '', '🫢',
-        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '❣️', '💕', '', '💓', '', '💖', '', '💝', '❤️‍🔥'
+        '🦊', '🐶', '🐼', '🐨', '🐯', '🐵', '🐝', '🐋',
+        '⚽', '🎮', '💻', '⌨️', '📷', '🎸', '🧑‍🚀', '🧘', '🧠', '💡', '⏰', '👾', '🚀', '🛸', '🌍', '🧊', '💍', '🎁',
+        '✨', '⭐', '🌟', '🌙', '☀️', '🌊', '⚡', '🔥', '💫', '🥇', '🍃', '☮️', '🕊️',
+        '😎', '🤠', '🧐', '🤓', '😴', '👽', '💀', '👻', '😈', '🤡', '👹', '🫢',
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '❤️‍🔥'
     ]
 };
 
 let tempAvatar = { ...settings.avatar };
 
-/* ============================================
-   TRANSLATIONS
-   ============================================ */
+/* ============================================ */
+/* i18n TRANSLATIONS                            */
+/* ============================================ */
 const TRANSLATIONS = {
     en: {
-        whatsNew: "What's New", guest: 'Guest', guestUser: 'Guest User', localStorage: 'Local Storage',
+        backBtn: 'Back', calendar: 'Calendar', whatsNew: "What's New",
+        footerHome: 'Home', footerAbout: 'About', footerChangelog: "What's New",
+        footerShortcuts: 'Shortcuts', footerTips: 'Tips', footerPrivacy: 'Privacy',
+        sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
+        guest: 'Guest', guestUser: 'Guest User', localStorage: 'Local Storage',
         settings: 'Settings', activeGarden: 'Active Garden', trophyGarden: 'Trophy Garden',
-        trophyDesc: 'Trees that reached 365+ days', addHabit: 'Plant New Habit', habitName: 'Name',
-        description: 'Description (optional)', tracking: 'Tracking', yesNo: 'Yes / No', quantity: 'Quantity',
-        goal: 'Goal', unit: 'Unit', plantSeed: 'Plant Seed', appearance: 'Appearance & Language',
-        language: 'Language', languageDesc: 'Interface language', theme: 'Theme',
+        trophyDesc: 'Trees that reached 365+ days', addHabit: 'Plant New Habit',
+        habitName: 'Name', description: 'Description (optional)', category: 'Category',
+        tracking: 'Tracking', yesNo: 'Yes / No', quantity: 'Quantity', goal: 'Goal', unit: 'Unit',
+        plantSeed: 'Plant Seed', stage: 'Stage', days: 'd', completions: 'completions',
+        emptyGarden: 'Your garden is empty', plantFirst: 'Plant first habit',
+        habitPlanted: 'Habit planted!', progressSaved: 'Progress saved!',
+        removed: 'Removed', exported: 'Exported!', imported: 'Imported!',
+        resetDone: 'Data cleared!', changeAvatar: 'Change Avatar',
+        seed: 'Seed', sprout: 'Sprout', plant: 'Plant', tree: 'Tree', legacy: 'Legacy',
+        legacyDesc: '365 days of mindfulness',
+        done: 'Done', activity: 'Activity', less: 'Less', more: 'More',
+        currentStreak: 'Current Streak', bestStreak: 'Best Streak',
+        completion: 'Completion', log: 'Log', complete: 'Complete',
+        appearance: 'Appearance', language: 'Language',
+        languageDesc: 'Interface language', theme: 'Theme',
         themeDesc: 'Choose your preferred look', showTrophy: 'Show Trophy Garden',
-        showTrophyDesc: 'Display completed trees (365+ days)', focusMode: 'Focus Mode',
-        focusModeDesc: 'Minimal UI for distraction-free tracking', data: 'Data', export: 'Export',
-        exportDesc: 'Download backup as JSON', exportBtn: 'Export', import: 'Import',
-        importDesc: 'Restore from file', importBtn: 'Import', reset: 'Reset', resetDesc: 'Delete all data',
-        resetBtn: 'Reset', done: 'Done', activity: 'Activity', less: 'Less', more: 'More',
-        currentStreak: 'Current Streak', bestStreak: 'Best Streak', completion: 'Completion',
-        stage: 'Stage', days: 'days', completions: 'completions', emptyGarden: 'Your garden is empty',
-        plantFirst: 'Plant first habit', habitPlanted: 'Habit planted!', progressSaved: 'Progress saved!',
-        removed: 'Removed', exported: 'Exported!', imported: 'Imported!', resetDone: 'Data cleared!',
-        changeAvatar: 'Change Avatar', categories: {
+        showTrophyDesc: 'Display completed trees (365+ days)',
+        focusMode: 'Focus Mode', focusModeDesc: 'Minimal UI for distraction-free tracking',
+        data: 'Data', export: 'Export', exportDesc: 'Download backup as JSON',
+        exportBtn: 'Export', import: 'Import', importDesc: 'Restore from file',
+        importBtn: 'Import', reset: 'Reset', resetDesc: 'Delete all data',
+        resetBtn: 'Reset',
+        holidayRegion: 'Holiday Region', holidayRegionDesc: 'Show public holidays for your country',
+        timeFormat: 'Time Format', timeFormatDesc: '12h or 24h clock',
+        timezone: 'Timezone', timezoneDesc: 'Fix calendar & habit timestamps',
+        categories: {
             health: 'Health', learning: 'Learning', work: 'Work', mindfulness: 'Mindfulness',
             creative: 'Creative', fitness: 'Fitness', social: 'Social', finance: 'Finance',
             hobby: 'Hobby', family: 'Family', career: 'Career', spiritual: 'Spiritual',
-            environment: 'Environment', other: 'Other',
-            calendar: 'Calendar',
-            holidayRegion: 'Holiday Region',
-holidayRegionDesc: 'Show public holidays for your country',
-        timeFormat: 'Time Format', timeFormatDesc: '12h or 24h clock',
-        timezone: 'Timezone', timezoneDesc: 'Fix calendar & habit timestamps',
-
-        }
+            environment: 'Environment', other: 'Other'
+        },
+        month: 'Month', week: 'Week', day: 'Day',
+        newEvent: 'New Event', editEvent: 'Edit Event',
+        title: 'Title', color: 'Color', start: 'Start', end: 'End', notes: 'Notes',
+        eventName: 'Event name', addNotes: 'Add notes...',
+        delete: 'Delete', cancel: 'Cancel', save: 'Save',
+        enterTitle: 'Please enter a title', confirmDelete: 'Delete this event?',
+        themeEvergreen: 'Evergreen', themeBlossom: 'Blossom',
+        themeOcean: 'Ocean', themeSunset: 'Sunset',
+        themePink: 'Pink', themeMoon: 'Moon',
+        background: 'Background', backgroundDesc: 'Add atmosphere to your garden',
+        backgroundNone: 'None', backgroundAurora: 'Aurora Garden',
+        backgroundRainfall: 'Rainfall', backgroundStarlight: 'Starlight',
+        profile: 'Profile', gardenSettings: 'Garden', calendarTime: 'Calendar',
+        dataStorage: 'Data', notifications: 'Notifications', aboutHelp: 'About',
+        updates: 'Updates', comingSoon: 'Coming soon...',
+        selectSetting: 'Select a setting', selectSettingDesc: 'Choose a category from the sidebar',
+        avatarDesc: 'Customize your profile picture',
+        editProfile: 'Edit Profile', editProfileDesc: 'Change your name, email, or password',
+        accountStatus: 'Account Status', accountActive: 'Account Active',
+        active: 'Active', localStorageMode: 'Local Storage Mode',
+        memberSince: 'Member Since', displayName: 'Display Name',
+        email: 'Email', dateOfBirth: 'Date of Birth',
+        newPassword: 'New Password (optional)', confirmPassword: 'Confirm New Password',
+        saveChanges: 'Save Changes', dangerZone: 'Danger Zone',
+        signOut: 'Sign Out', signOutDesc: 'Return to local storage mode',
+        signIn: 'Sign In', signInDesc: 'Sync your data across devices',
+        nameRequired: 'Display name is required', emailRequired: 'Email is required',
+        passwordsMismatch: 'Passwords do not match', passwordTooShort: 'Password must be at least 6 characters',
+        profileUpdated: 'Profile updated successfully',
+        confirmSignOut: 'Sign out of your account?', signedOut: 'Signed out successfully',
+        tipsDesc: 'Get the most out of Cultiva', privacyDesc: 'How we handle your data',
+        changelogDesc: 'See latest updates',
+        dev: 'Dev',
+        privacy: "Privacy",
     },
     ru: {
-        whatsNew: 'Что нового', guest: 'Гость', guestUser: 'Гостевой пользователь', localStorage: 'Локальное хранилище',
+        backBtn: 'Назад', calendar: 'Календарь', whatsNew: 'Что нового',
+        footerHome: 'Главная', footerAbout: 'О проекте', footerChangelog: 'Что нового',
+        footerShortcuts: 'Клавиши', footerTips: 'Советы', footerPrivacy: 'Приватность',
+        sun: 'Вс', mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб',
+        guest: 'Гость', guestUser: 'Гостевой пользователь', localStorage: 'Локальное хранилище',
         settings: 'Настройки', activeGarden: 'Активный сад', trophyGarden: 'Сад трофеев',
-        trophyDesc: 'Деревья, достигшие 365+ дней', addHabit: 'Посадить привычку', habitName: 'Название',
-        description: 'Описание (необязательно)', tracking: 'Отслеживание', yesNo: 'Да / Нет', quantity: 'Количество',
-        goal: 'Цель', unit: 'Единица', plantSeed: 'Посадить', appearance: 'Внешний вид и язык',
-        language: 'Язык', languageDesc: 'Язык интерфейса', theme: 'Тема', themeDesc: 'Выберите оформление',
-        showTrophy: 'Показывать сад трофеев', showTrophyDesc: 'Отображать завершённые деревья (365+ дней)',
-        focusMode: 'Режим фокуса', focusModeDesc: 'Минимальный интерфейс без отвлечений', data: 'Данные',
-        export: 'Экспорт', exportDesc: 'Скачать резервную копию', exportBtn: 'Экспорт', import: 'Импорт',
-        importDesc: 'Восстановить из файла', importBtn: 'Импорт', reset: 'Сброс', resetDesc: 'Удалить все данные',
-        resetBtn: 'Сброс', done: 'Готово', activity: 'Активность', less: 'Меньше', more: 'Больше',
-        currentStreak: 'Текущая серия', bestStreak: 'Лучшая серия', completion: 'Выполнение',
-        stage: 'Стадия', days: 'дн.', completions: 'вып.', emptyGarden: 'Ваш сад пуст',
-        plantFirst: 'Посадить первую привычку', habitPlanted: 'Привычка посажена!',
-        progressSaved: 'Прогресс сохранён!', removed: 'Удалено', exported: 'Экспортировано!',
-        imported: 'Импортировано!', resetDone: 'Данные очищены!', changeAvatar: 'Изменить аватар',
-        categories: {
-        health: 'Здоровье', learning: 'Обучение', work: 'Работа', mindfulness: 'Осознанность',
-        creative: 'Творчество', fitness: 'Спорт', social: 'Общение', finance: 'Финансы',
-        hobby: 'Хобби', family: 'Семья', career: 'Карьера', spiritual: 'Духовное',
-        environment: 'Экология', other: 'Другое',
-        },
-        calendar: 'Календарь',
-        holidayRegion: 'Регион праздников',
-        holidayRegionDesc: 'Показывать государственные праздники вашей страны',
+        trophyDesc: 'Деревья, достигшие 365+ дней', addHabit: 'Посадить привычку',
+        habitName: 'Название', description: 'Описание (необязательно)', category: 'Категория',
+        tracking: 'Отслеживание', yesNo: 'Да / Нет', quantity: 'Количество', goal: 'Цель', unit: 'Единица',
+        plantSeed: 'Посадить', stage: 'Стадия', days: 'д', completions: 'вып.',
+        emptyGarden: 'Ваш сад пуст', plantFirst: 'Посадить первую привычку',
+        habitPlanted: 'Привычка посажена!', progressSaved: 'Прогресс сохранён!',
+        removed: 'Удалено', exported: 'Экспортировано!', imported: 'Импортировано!',
+        resetDone: 'Данные очищены!', changeAvatar: 'Изменить аватар',
+        seed: 'Семя', sprout: 'Росток', plant: 'Растение', tree: 'Дерево', legacy: 'Наследие',
+        legacyDesc: '365 дней осознанности',
+        done: 'Готово', activity: 'Активность', less: 'Меньше', more: 'Больше',
+        currentStreak: 'Текущая серия', bestStreak: 'Лучшая серия',
+        completion: 'Выполнение', log: 'Записать', complete: 'Выполнено',
+        appearance: 'Оформление', language: 'Язык',
+        languageDesc: 'Язык интерфейса', theme: 'Тема',
+        themeDesc: 'Выберите оформление', showTrophy: 'Показывать сад трофеев',
+        showTrophyDesc: 'Отображать завершённые деревья (365+ дней)',
+        focusMode: 'Режим фокуса', focusModeDesc: 'Минимальный интерфейс без отвлечений',
+        data: 'Данные', export: 'Экспорт', exportDesc: 'Скачать резервную копию',
+        exportBtn: 'Экспорт', import: 'Импорт', importDesc: 'Восстановить из файла',
+        importBtn: 'Импорт', reset: 'Сброс', resetDesc: 'Удалить все данные',
+        resetBtn: 'Сброс',
+        holidayRegion: 'Регион праздников', holidayRegionDesc: 'Показывать государственные праздники вашей страны',
         timeFormat: 'Формат времени', timeFormatDesc: '12-часовой или 24-часовой',
         timezone: 'Часовой пояс', timezoneDesc: 'Синхронизировать время привычек и календаря',
+        categories: {
+            health: 'Здоровье', learning: 'Обучение', work: 'Работа', mindfulness: 'Осознанность',
+            creative: 'Творчество', fitness: 'Спорт', social: 'Общение', finance: 'Финансы',
+            hobby: 'Хобби', family: 'Семья', career: 'Карьера', spiritual: 'Духовное',
+            environment: 'Экология', other: 'Другое'
+        },
+        month: 'Месяц', week: 'Неделя', day: 'День',
+        newEvent: 'Новое событие', editEvent: 'Редактировать',
+        title: 'Название', color: 'Цвет', start: 'Начало', end: 'Конец', notes: 'Заметки',
+        eventName: 'Название события', addNotes: 'Добавить заметки...',
+        delete: 'Удалить', cancel: 'Отмена', save: 'Сохранить',
+        enterTitle: 'Введите название', confirmDelete: 'Удалить событие?',
+        themeEvergreen: 'Вечнозелёный', themeBlossom: 'Цветение',
+        themeOcean: 'Океан', themeSunset: 'Закат',
+        themePink: 'Розовый', themeMoon: 'Лунный',
+        background: 'Фон', backgroundDesc: 'Добавь атмосферы в свой сад',
+        backgroundNone: 'Без фона', backgroundAurora: 'Северное сияние',
+        backgroundRainfall: 'Дождь в саду', backgroundStarlight: 'Звёздная ночь',
+        profile: 'Профиль', gardenSettings: 'Сад', calendarTime: 'Календарь',
+        dataStorage: 'Данные', notifications: 'Уведомления', aboutHelp: 'О приложении',
+        updates: 'Обновления', comingSoon: 'Скоро...',
+        selectSetting: 'Выберите настройку', selectSettingDesc: 'Выберите категорию из бокового меню',
+        avatarDesc: 'Настройте изображение профиля',
+        editProfile: 'Редактировать профиль', editProfileDesc: 'Изменить имя, email или пароль',
+        accountStatus: 'Статус аккаунта', accountActive: 'Аккаунт активен',
+        active: 'Активен', localStorageMode: 'Локальный режим',
+        memberSince: 'Участник с', displayName: 'Отображаемое имя',
+        email: 'Email', dateOfBirth: 'Дата рождения',
+        newPassword: 'Новый пароль (необязательно)', confirmPassword: 'Подтвердите пароль',
+        saveChanges: 'Сохранить изменения', dangerZone: 'Опасная зона',
+        signOut: 'Выйти', signOutDesc: 'Вернуться в локальный режим',
+        signIn: 'Войти', signInDesc: 'Синхронизируйте данные между устройствами',
+        nameRequired: 'Имя обязательно', emailRequired: 'Email обязателен',
+        passwordsMismatch: 'Пароли не совпадают', passwordTooShort: 'Пароль должен быть не менее 6 символов',
+        profileUpdated: 'Профиль обновлён',
+        confirmSignOut: 'Выйти из аккаунта?', signedOut: 'Вы вышли из аккаунта',
+        tipsDesc: 'Как получить максимум от Cultiva', privacyDesc: 'Как мы обрабатываем ваши данные',
+        changelogDesc: 'Последние обновления',
+        dev: 'Разработка',
+        privacy: "Политика конфиденциальности",
     }
 };
 
-/* ============================================
-   SETTINGS LOGIC 
-   ============================================ */
+currentT = TRANSLATIONS.en;
+
+export { TRANSLATIONS };
+
+/* ============================================ */
+/* SETTINGS LOGIC                               */
+/* ============================================ */
+
 async function loadSettings() {
     try {
         let saved = await storage.get('cultiva-settings');
@@ -198,46 +315,27 @@ async function loadSettings() {
             if (saved.theme) settings.theme = saved.theme;  
             if (typeof saved.showTrophies === 'boolean') settings.showTrophies = saved.showTrophies;
             if (typeof saved.focusMode === 'boolean') settings.focusMode = saved.focusMode;
+            if (saved.holidayRegion) settings.holidayRegion = saved.holidayRegion;
             if (saved.avatar) settings.avatar = { ...settings.avatar, ...saved.avatar };
         }
+        
+        currentLang = settings.lang;
+        currentT = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
     } catch (err) {
         console.warn('Failed to load settings:', err);
     }
 }
 
-// ⏱️ Time Format Setting
-const timeFormatSelect = document.getElementById('time-format-select');
-if (timeFormatSelect) {
-    timeFormatSelect.value = localStorage.getItem('cultiva-time-format') || 'auto';
-    timeFormatSelect.addEventListener('change', (e) => {
-        localStorage.setItem('cultiva-time-format', e.target.value);
-    });
-}
-
-const holidaySelect = document.getElementById('holiday-select');
-if (holidaySelect) {
-    holidaySelect.value = settings.holidayRegion || 'us';
-    holidaySelect.addEventListener('change', (e) => {
-        settings.holidayRegion = e.target.value;
-        saveSettings();
-        // Перезагрузить календарь если он открыт
-        if (window.location.pathname.includes('calendar.html')) {
-            location.reload();
-        }
-    });
-}
-
 function saveSettings() {
     console.log('Saving settings (before):', settings);
     
-    if (settings.theme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        settings.theme = prefersDark ? 'dark' : 'light';
-        console.log('Resolved "auto" to:', settings.theme);
-    }
-    
     storage.set('cultiva-settings', settings);
     localStorage.setItem('cultiva-settings', JSON.stringify(settings));
+    localStorage.setItem('cultiva-lang', settings.lang);
+    localStorage.setItem('cultiva-theme', settings.theme);
+    
+    currentLang = settings.lang;
+    currentT = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
     
     console.log('Saved settings (after):', settings);
     
@@ -249,20 +347,18 @@ function applySettings() {
     if (langSelect) langSelect.value = settings.lang;
     applyTranslations(settings.lang);
     
-    document.body.classList.remove('theme-light', 'theme-dark', 'theme-pink', 'theme-moon');
+    document.body.classList.remove(
+        'theme-light', 'theme-dark', 'theme-pink', 'theme-moon',
+        'theme-evergreen', 'theme-blossom', 'theme-ocean', 'theme-sunset'
+    );
     
-    if (settings.theme === 'light') {
-        document.body.classList.add('theme-light');
-    } else if (settings.theme === 'dark') {
-        document.body.classList.add('theme-dark');
-    } else if (settings.theme === 'pink') {
-        document.body.classList.add('theme-pink');
-    } else if (settings.theme === 'moon') {
-        document.body.classList.add('theme-moon');
-    } else {
+    let appliedTheme = settings.theme;
+    if (appliedTheme === 'auto') {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+        appliedTheme = prefersDark ? 'dark' : 'light';
     }
+    
+    document.body.classList.add(`theme-${appliedTheme}`);
     
     if (themeSelect) themeSelect.value = settings.theme;
     
@@ -271,47 +367,461 @@ function applySettings() {
     if (trophyToggle) trophyToggle.checked = settings.showTrophies;
     document.body.classList.toggle('focus-mode', settings.focusMode);
     if (focusToggle) focusToggle.checked = settings.focusMode;
+    
+    const holidaySelect = document.getElementById('holiday-select');
+    if (holidaySelect) holidaySelect.value = settings.holidayRegion || 'us';
+    
     renderHeaderAvatar();
 }
 
-/* ============================================
-   i18n
-   ============================================ */
+/* ============================================ */
+/* i18n                                         */
+/* ============================================ */
+
 function applyTranslations(lang) {
     const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+    
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.dataset.i18n;
         if (t[key]) {
-            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t[key];
-            else el.textContent = t[key];
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = t[key];
+            } else {
+                el.textContent = t[key];
+            }
+        }
+    });
+
+    if (themeSelect) {
+        Array.from(themeSelect.options).forEach(option => {
+            const key = option.dataset.i18n;
+            if (key && t[key]) {
+                option.textContent = t[key];
+            }
+        });
+    }
+
+    const bgSelect = document.getElementById('bg-select');
+    if (bgSelect) {
+        Array.from(bgSelect.options).forEach(option => {
+            const key = option.dataset.i18n;
+            if (key && t[key]) {
+                option.textContent = t[key];
+            }
+        });
+    }
+
+    const today = getTodayStr();
+    
+    document.querySelectorAll('.habit-card .btn-card-primary').forEach(btn => {
+        const card = btn.closest('.habit-card');
+        if (!card) return;
+        const id = card.dataset.id;
+        const habit = habits.getAll().find(h => h.id === id);
+        if (!habit) return;
+        
+        const isCompleted = habit.trackType === 'binary' 
+            ? habit.lastCompleted === today 
+            : (habit.dailyProgress?.[today] || 0) >= habit.target;
+            
+        if (isCompleted) {
+            btn.textContent = t.done || 'Done';
+        } else {
+            btn.textContent = habit.trackType === 'quantity' ? (t.log || 'Log') : (t.complete || 'Complete');
+        }
+    });
+    
+    const doneBtn = document.getElementById('close-stats');
+    if (doneBtn) doneBtn.textContent = t.done || 'Done';
+    
+    document.querySelectorAll('[data-i18n-category]').forEach(el => {
+        const cat = el.dataset.i18nCategory;
+        if (t.categories && t.categories[cat]) {
+            el.textContent = t.categories[cat];
         }
     });
 }
 
-/* ============================================
-   SETTINGS EVENTS
-   ============================================ */
+/* ============================================ */
+/* SETTINGS EVENTS                              */
+/* ============================================ */
+
 langSelect?.addEventListener('change', (e) => { settings.lang = e.target.value; saveSettings(); });
 themeSelect?.addEventListener('change', (e) => { settings.theme = e.target.value; saveSettings(); });
 trophyToggle?.addEventListener('change', (e) => { settings.showTrophies = e.target.checked; saveSettings(); });
 focusToggle?.addEventListener('change', (e) => { settings.focusMode = e.target.checked; saveSettings(); });
 
-/* ============================================
-   Timezone Setting
-   ============================================ */
+const holidaySelect = document.getElementById('holiday-select');
+if (holidaySelect) {
+    holidaySelect.addEventListener('change', (e) => {
+        settings.holidayRegion = e.target.value;
+        saveSettings();
+    });
+}
+
+/* ============================================ */
+/* TIMEZONE SETTING                             */
+/* ============================================ */
+
 const tzSelect = document.getElementById('tz-select');
 if (tzSelect) {
     tzSelect.value = localStorage.getItem('cultiva-timezone') || 'auto';
     tzSelect.addEventListener('change', (e) => {
         localStorage.setItem('cultiva-timezone', e.target.value);
-        // Обновляем отображение дат/времени в реальном времени
         if (typeof renderGarden === 'function') renderGarden(); 
     });
 }
 
-/* ============================================
-   USER MENU
-   ============================================ */
+const timeFormatSelect = document.getElementById('time-format-select');
+if (timeFormatSelect) {
+    timeFormatSelect.value = localStorage.getItem('cultiva-time-format') || 'auto';
+    timeFormatSelect.addEventListener('change', (e) => {
+        localStorage.setItem('cultiva-time-format', e.target.value);
+    });
+}
+
+function updateCultivaDatePreview() {
+    const preview = document.getElementById('cultiva-date-preview');
+    if (!preview) return;
+    
+    const tz = getCultivaTimezone();
+    const now = new Date();
+    const formatted = new Intl.DateTimeFormat(navigator.language, {
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZone: tz
+    }).format(now);
+    
+    preview.textContent = formatted + (tz ? ` (${tz})` : ' (System)');
+}
+
+if (tzSelect) {
+    tzSelect.addEventListener('change', () => {
+        localStorage.setItem('cultiva-timezone', tzSelect.value);
+        updateCultivaDatePreview();
+        if (typeof renderGarden === 'function') renderGarden();
+    });
+}
+
+/* ============================================ */
+/* BACKGROUND LOGIC                             */
+/* ============================================ */
+
+const bgSelect = document.getElementById('bg-select');
+const bgContainers = {
+    aurora: document.getElementById('bg-aurora'),
+    rainfall: document.getElementById('bg-rainfall'),
+    starlight: document.getElementById('bg-starlight')
+};
+
+const savedBg = localStorage.getItem('cultiva-background') || 'none';
+if (bgSelect) bgSelect.value = savedBg;
+applyBackground(savedBg);
+
+bgSelect?.addEventListener('change', (e) => {
+    const bg = e.target.value;
+    localStorage.setItem('cultiva-background', bg);
+    applyBackground(bg);
+});
+
+function applyBackground(bg) {
+    Object.values(bgContainers).forEach(el => { if (el) el.style.display = 'none'; });
+    document.body.classList.remove('with-bg-aurora', 'with-bg-rainfall', 'with-bg-starlight');
+    
+    if (bg === 'none') return;
+    
+    const container = bgContainers[bg];
+    if (container) {
+        container.style.display = 'block';
+        document.body.classList.add(`with-bg-${bg}`);
+        
+        if (bg === 'rainfall') {
+            generateRaindrops(container);
+        }
+        
+        if (bg === 'starlight') {
+            generateStars(container);
+        }
+    }
+}
+
+function generateRaindrops(container) {
+    container.innerHTML = '';
+    for (let i = 0; i < 50; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'rain-drop';
+        drop.style.left = `${Math.random() * 100}%`;
+        drop.style.animationDelay = `${Math.random() * 2}s`;
+        drop.style.animationDuration = `${1 + Math.random() * 1}s`;
+        container.appendChild(drop);
+    }
+}
+
+function generateStars(container) {
+    container.innerHTML = '';
+    for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        star.style.animationDuration = `${2 + Math.random() * 4}s`;
+        container.appendChild(star);
+    }
+}
+
+/* ============================================ */
+/* SETTINGS NAVIGATION                          */
+/* ============================================ */
+
+function initSettingsNavigation() {
+    const sidebarItems = document.querySelectorAll('.settings-sidebar-item[data-section]');
+    const emptyState = document.getElementById('settings-empty');
+    
+    if (!sidebarItems.length) return;
+    
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const section = item.dataset.section;
+            
+            if (item.classList.contains('settings-sidebar-disabled')) {
+                showNotification(currentT.comingSoon || 'Coming soon...');
+                return;
+            }
+            
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            if (emptyState) emptyState.style.display = 'none';
+            
+            document.querySelectorAll('.settings-section-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(`section-${section}`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            if (section === 'profile') {
+                updateProfileSection();
+            }
+        });
+    });
+    
+    document.getElementById('settings-open-avatar-picker')?.addEventListener('click', () => {
+        closeModal(settingsModal);
+        setTimeout(() => openModal(document.getElementById('avatar-modal')), 300);
+    });
+    
+    document.getElementById('close-settings')?.addEventListener('click', () => {
+        setTimeout(() => {
+            const firstItem = document.querySelector('.settings-sidebar-item[data-section="profile"]');
+            if (firstItem) {
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                firstItem.classList.add('active');
+                
+                document.querySelectorAll('.settings-section-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('section-profile')?.classList.add('active');
+                
+                if (emptyState) emptyState.style.display = 'none';
+            }
+        }, 300);
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && settingsModal?.classList.contains('active')) {
+            document.getElementById('close-settings')?.click();
+        }
+    });
+}
+
+/* ============================================ */
+/* PROFILE MANAGEMENT                           */
+/* ============================================ */
+
+function updateProfileSection() {
+    const isLoggedIn = auth.isAuthenticated();
+    const user = auth.getCurrentUser();
+    const t = currentT;
+    
+    const avatarEmoji = document.getElementById('settings-avatar-emoji');
+    const avatarImg = document.getElementById('settings-avatar-img');
+    const avatarContainer = document.getElementById('settings-profile-avatar');
+    
+    if (avatarContainer) {
+        if (settings.avatar?.photo) {
+            if (avatarImg) {
+                avatarImg.src = settings.avatar.photo;
+                avatarImg.style.display = 'block';
+            }
+            if (avatarEmoji) avatarEmoji.style.display = 'none';
+            avatarContainer.style.background = 'transparent';
+        } else {
+            if (avatarImg) avatarImg.style.display = 'none';
+            if (avatarEmoji) {
+                avatarEmoji.style.display = 'flex';
+                avatarEmoji.textContent = settings.avatar?.emoji || '🌱';
+            }
+            
+            const bg = AVATAR_DATA.backgrounds.find(b => b.id === settings.avatar?.background);
+            avatarContainer.style.background = (bg && bg.id !== 'none') ? bg.css : 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))';
+        }
+    }
+    
+    const profileName = document.getElementById('settings-profile-name');
+    const profileEmail = document.getElementById('settings-profile-email');
+    
+    if (isLoggedIn && user) {
+        if (profileName) profileName.textContent = user.name || user.email?.split('@')[0] || 'User';
+        if (profileEmail) profileEmail.textContent = user.email || '';
+    } else {
+        if (profileName) profileName.textContent = t.guestUser || 'Guest User';
+        if (profileEmail) profileEmail.textContent = t.localStorage || 'Local Storage';
+    }
+    
+    const accountStatus = document.getElementById('profile-account-status');
+    const statusBadge = document.getElementById('profile-status-badge');
+    
+    if (isLoggedIn) {
+        if (accountStatus) accountStatus.textContent = t.accountActive || 'Account Active';
+        if (statusBadge) {
+            statusBadge.textContent = t.active || 'Active';
+            statusBadge.classList.add('online');
+        }
+    } else {
+        if (accountStatus) accountStatus.textContent = t.localStorageMode || 'Local Storage Mode';
+        if (statusBadge) {
+            statusBadge.textContent = t.guest || 'Guest';
+            statusBadge.classList.remove('online');
+        }
+    }
+    
+    const editProfileBtn = document.getElementById('settings-edit-profile');
+    if (editProfileBtn) {
+        editProfileBtn.style.display = isLoggedIn ? 'flex' : 'none';
+    }
+    
+    const memberSinceRow = document.getElementById('profile-member-since');
+    const memberDate = document.getElementById('profile-member-date');
+    
+    if (isLoggedIn && user?.createdAt) {
+        if (memberSinceRow) memberSinceRow.style.display = 'flex';
+        if (memberDate) {
+            const date = new Date(user.createdAt);
+            memberDate.textContent = date.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+    } else {
+        if (memberSinceRow) memberSinceRow.style.display = 'none';
+    }
+}
+
+const editProfileModal = document.getElementById('edit-profile-modal');
+const editProfileForm = document.getElementById('edit-profile-form');
+const editProfileError = document.getElementById('edit-profile-error');
+
+function initProfileManagement() {
+    document.getElementById('settings-edit-profile')?.addEventListener('click', () => {
+        const user = auth.getCurrentUser();
+        if (!user) return;
+        
+        document.getElementById('edit-display-name').value = user.name || '';
+        document.getElementById('edit-email').value = user.email || '';
+        document.getElementById('edit-dob').value = user.dob || '';
+        document.getElementById('edit-new-password').value = '';
+        document.getElementById('edit-confirm-password').value = '';
+        if (editProfileError) editProfileError.style.display = 'none';
+        
+        closeModal(settingsModal);
+        setTimeout(() => openModal(editProfileModal), 300);
+    });
+    
+    document.getElementById('edit-profile-cancel')?.addEventListener('click', () => {
+        closeModal(editProfileModal);
+        setTimeout(() => openModal(settingsModal), 300);
+    });
+    
+    editProfileModal?.querySelector('.modal-close')?.addEventListener('click', () => {
+        closeModal(editProfileModal);
+        setTimeout(() => openModal(settingsModal), 300);
+    });
+    
+    editProfileModal?.querySelector('.modal-overlay')?.addEventListener('click', () => {
+        closeModal(editProfileModal);
+        setTimeout(() => openModal(settingsModal), 300);
+    });
+    
+    editProfileForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (editProfileError) editProfileError.style.display = 'none';
+        
+        const displayName = document.getElementById('edit-display-name').value.trim();
+        const email = document.getElementById('edit-email').value.trim();
+        const dob = document.getElementById('edit-dob').value;
+        const newPassword = document.getElementById('edit-new-password').value;
+        const confirmPassword = document.getElementById('edit-confirm-password').value;
+        
+        if (!displayName) {
+            editProfileError.textContent = currentT.nameRequired || 'Display name is required';
+            editProfileError.style.display = 'block';
+            return;
+        }
+        
+        if (!email) {
+            editProfileError.textContent = currentT.emailRequired || 'Email is required';
+            editProfileError.style.display = 'block';
+            return;
+        }
+        
+        if (newPassword && newPassword !== confirmPassword) {
+            editProfileError.textContent = currentT.passwordsMismatch || 'Passwords do not match';
+            editProfileError.style.display = 'block';
+            return;
+        }
+        
+        if (newPassword && newPassword.length < 6) {
+            editProfileError.textContent = currentT.passwordTooShort || 'Password must be at least 6 characters';
+            editProfileError.style.display = 'block';
+            return;
+        }
+        
+        try {
+            const updates = { name: displayName, email: email, dob: dob || null };
+            if (newPassword) updates.password = newPassword;
+            
+            await auth.updateProfile(updates);
+            await updateAuthUI();
+            updateProfileSection();
+            
+            closeModal(editProfileModal);
+            setTimeout(() => openModal(settingsModal), 300);
+            
+            showNotification(currentT.profileUpdated || 'Profile updated successfully');
+        } catch (err) {
+            if (editProfileError) {
+                editProfileError.textContent = err.message || 'Failed to update profile';
+                editProfileError.style.display = 'block';
+            }
+        }
+    });
+    
+    document.getElementById('sign-out-from-profile')?.addEventListener('click', async () => {
+        if (confirm(currentT.confirmSignOut || 'Sign out of your account?')) {
+            await auth.logout();
+            await updateAuthUI();
+            updateProfileSection();
+            renderGarden();
+            closeModal(editProfileModal);
+            showNotification(currentT.signedOut || 'Signed out successfully');
+        }
+    });
+}
+
+/* ============================================ */
+/* USER MENU                                    */
+/* ============================================ */
+
 function toggleUserMenu() {
     const isActive = userDropdown.classList.toggle('active');
     userMenuBtn.setAttribute('aria-expanded', isActive);
@@ -326,9 +836,10 @@ document.addEventListener('click', (e) => {
 });
 document.getElementById('open-settings')?.addEventListener('click', () => { openModal(settingsModal); closeUserMenu(); });
 
-/* ============================================
-   AVATAR LOGIC 
-   ============================================ */
+/* ============================================ */
+/* AVATAR LOGIC                                 */
+/* ============================================ */
+
 function renderHeaderAvatar() {
     const headerAvatar = document.getElementById('header-avatar');
     const headerEmoji = document.getElementById('header-avatar-emoji');
@@ -372,12 +883,12 @@ function renderAvatarPicker() {
         previewImage.src = tempAvatar.photo;
         previewImage.style.display = 'block';
         previewEmoji.style.display = 'none';
-        clearPhotoBtn.style.display = 'inline-block';
+        if (clearPhotoBtn) clearPhotoBtn.style.display = 'inline-block';
     } else {
         preview.classList.remove('has-photo');
-        previewImage.style.display = 'none';
-        previewEmoji.style.display = '';
-        clearPhotoBtn.style.display = 'none';
+        if (previewImage) previewImage.style.display = 'none';
+        if (previewEmoji) previewEmoji.style.display = '';
+        if (clearPhotoBtn) clearPhotoBtn.style.display = 'none';
         const bg = AVATAR_DATA.backgrounds.find(b => b.id === tempAvatar.background);
         if (bg && bg.id !== 'none') {
             preview.style.backgroundImage = bg.css;
@@ -386,7 +897,7 @@ function renderAvatarPicker() {
             preview.style.backgroundImage = 'none';
             preview.style.backgroundColor = 'var(--bg-tertiary)';
         }
-        previewEmoji.textContent = tempAvatar.emoji;
+        if (previewEmoji) previewEmoji.textContent = tempAvatar.emoji;
     }
     bgGrid.innerHTML = AVATAR_DATA.backgrounds.map(bg => `
         <button class="avatar-option ${tempAvatar.background === bg.id && !tempAvatar.photo ? 'selected' : ''} ${bg.id === 'none' ? 'bg-none' : ''}" 
@@ -453,7 +964,7 @@ function initAvatarPicker() {
         settings.avatar = newAvatar;
         applySettings();
         closeModal(modal);
-        showNotification('', 'Avatar updated!');
+        showNotification('Avatar updated!');
     });
 
     resetBtn?.addEventListener('click', () => {
@@ -466,24 +977,38 @@ function initAvatarPicker() {
     modal.querySelector('.modal-overlay')?.addEventListener('click', () => closeModal(modal));
 }
 
-/* ============================================
-   NOTIFICATIONS
-   ============================================ */
+/* ============================================ */
+/* NOTIFICATIONS                                */
+/* ============================================ */
+
 function showNotification(icon, text, subText = '', actionText = '', actionCallback = null) {
+    if (arguments.length === 1) {
+        text = icon;
+        icon = '';
+    }
+    
     const existing = document.querySelector('.dynamic-notification');
     if (existing) existing.remove();
+    
     const notification = document.createElement('div');
     notification.className = 'dynamic-notification';
+    
+    const iconHtml = icon ? `<span class="dynamic-notification-icon">${icon}</span>` : '';
+    
     notification.innerHTML = `
-        <span class="dynamic-notification-icon">${icon}</span>
+        ${iconHtml}
         <div class="dynamic-notification-content">
             <span class="dynamic-notification-text">${text}</span>
             ${subText ? `<span class="dynamic-notification-sub">${subText}</span>` : ''}
         </div>
         ${actionText && actionCallback ? `<button class="dynamic-notification-btn">${actionText}</button>` : ''}
     `;
+    
     document.body.appendChild(notification);
-    if (actionCallback && actionText) notification.querySelector('.dynamic-notification-btn').addEventListener('click', actionCallback);
+    if (actionCallback && actionText) {
+        notification.querySelector('.dynamic-notification-btn').addEventListener('click', actionCallback);
+    }
+    
     setTimeout(() => notification.classList.add('visible'), 100);
     setTimeout(() => {
         notification.classList.remove('visible');
@@ -491,22 +1016,30 @@ function showNotification(icon, text, subText = '', actionText = '', actionCallb
     }, 4000);
 }
 
-/* ============================================
-   RENDER
-   ============================================ */
+/* ============================================ */
+/* RENDER                                       */
+/* ============================================ */
+
 function createHabitCard(habit, isTrophy = false) {
     const stage = isTrophy ? GROWTH_STAGES.LEGACY : habits.getStage(habit.progress);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayStr();
     const isCompleted = habit.trackType === 'binary' 
         ? habit.lastCompleted === today 
         : (habit.dailyProgress?.[today] || 0) >= habit.target;
+    
     let progressBar = '';
     if (habit.trackType === 'quantity') {
         const cur = habit.dailyProgress?.[today] || 0;
         const pct = Math.min(100, (cur / habit.target) * 100);
         progressBar = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
     }
-    const categoryBadge = habit.category ? `<span class="category-badge">${habit.category.charAt(0).toUpperCase() + habit.category.slice(1)}</span>` : '';
+    
+    const t = TRANSLATIONS[settings.lang];
+    const categoryName = habit.category ? (t.categories?.[habit.category] || habit.category) : '';
+    const categoryBadge = categoryName ? `<span class="category-badge" data-i18n-category="${habit.category}">${categoryName}</span>` : '';
+    
+    const streakText = habit.currentStreak > 0 ? ` • 🔥 ${habit.currentStreak}` : '';
+    
     const card = document.createElement('article');
     card.className = 'habit-card';
     card.dataset.id = habit.id;
@@ -517,13 +1050,13 @@ function createHabitCard(habit, isTrophy = false) {
             <div class="card-info">
                 <div class="card-title">${habit.treeName || habit.name}</div>
                 ${habit.description ? `<div class="card-description">${habit.description}</div>` : ''}
-                <div class="card-subtitle">${stage.name} • ${habit.progress}d</div>
+                <div class="card-subtitle">${stage.name} • ${habit.progress}d${streakText}</div>
                 ${categoryBadge}
             </div>
         </div>
         ${progressBar}
         <div class="card-actions">
-            <button class="btn-card btn-card-primary${isCompleted ? ' completed' : ''}">${isCompleted ? 'Done' : (habit.trackType === 'quantity' ? 'Log' : 'Complete')}</button>
+            <button class="btn-card btn-card-primary${isCompleted ? ' completed' : ''}">${isCompleted ? (t.done || 'Done') : (habit.trackType === 'quantity' ? (t.log || 'Log') : (t.complete || 'Complete'))}</button>
             <button class="btn-card btn-card-danger">✕</button>
         </div>
     `;
@@ -534,10 +1067,12 @@ function renderGarden() {
     const all = habits.getAll();
     const active = all.filter(h => h.progress < LEGACY_THRESHOLD);
     const trophies = all.filter(h => h.progress >= LEGACY_THRESHOLD);
+    const t = TRANSLATIONS[settings.lang];
+    
     if (gardenEl) {
         gardenEl.innerHTML = '';
         if (active.length === 0) {
-            gardenEl.innerHTML = `<div class="empty-state"><p style="font-size:40px">🌱</p><p data-i18n="emptyGarden">${TRANSLATIONS[settings.lang].emptyGarden}</p><button class="btn-primary" id="add-first" style="width:auto;padding:10px 20px;margin-top:16px" data-i18n="plantFirst">${TRANSLATIONS[settings.lang].plantFirst}</button></div>`;
+            gardenEl.innerHTML = `<div class="empty-state"><p style="font-size:40px">🌱</p><p data-i18n="emptyGarden">${t.emptyGarden}</p><button class="btn-primary" id="add-first" style="width:auto;padding:10px 20px;margin-top:16px" data-i18n="plantFirst">${t.plantFirst}</button></div>`;
             document.getElementById('add-first')?.addEventListener('click', () => openModal(addModal));
         } else {
             active.forEach(h => gardenEl.appendChild(createHabitCard(h)));
@@ -552,9 +1087,10 @@ function renderGarden() {
     applyTranslations(settings.lang);
 }
 
-/* ============================================
-   MODALS
-   ============================================ */
+/* ============================================ */
+/* MODALS                                       */
+/* ============================================ */
+
 function openModal(modal) { if (!modal) return; modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
 function closeModal(modal) { if (!modal) return; modal.classList.remove('active'); document.body.style.overflow = ''; }
 
@@ -583,18 +1119,19 @@ function openStats(id) {
     openModal(statsModal);
 }
 
-/* ============================================
-   EXPORT / IMPORT
-   ============================================ */
+/* ============================================ */
+/* EXPORT / IMPORT                              */
+/* ============================================ */
+
 function exportData() {
     const t = TRANSLATIONS[settings.lang];
-    const data = { habits: habits.getAll(), exportedAt: new Date().toISOString(), version: '0.2.1' };
+    const data = { habits: habits.getAll(), exportedAt: new Date().toISOString(), version: '0.3.0' };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `cultiva-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.href = url; a.download = `cultiva-backup-${getTodayStr()}.json`;
     a.click(); URL.revokeObjectURL(url);
-    showNotification('', t.exported);
+    showNotification( t.exported);
 }
 
 function importData(file) {
@@ -609,13 +1146,14 @@ function importData(file) {
             } catch (err) { reject(err); }
         };
         reader.readAsText(file);
-    }).then(() => { renderGarden(); showNotification('', t.imported); })
+    }).then(() => { renderGarden(); showNotification( t.imported); })
       .catch(err => alert(err.message));
 }
 
-/* ============================================
-   AUTH UI LOGIC
-   ============================================ */
+/* ============================================ */
+/* AUTH UI LOGIC                                */
+/* ============================================ */
+
 const authModal = document.getElementById('auth-modal');
 const authTrigger = document.getElementById('auth-trigger');
 const signOutBtn = document.getElementById('sign-out-btn');
@@ -624,7 +1162,6 @@ const authError = document.getElementById('auth-error');
 async function updateAuthUI() {
     const isLoggedIn = auth.isAuthenticated();
     const user = auth.getCurrentUser();
-    const email = user ? user.email : null;
     
     const authTriggerEl = document.getElementById('auth-trigger');
     const signOutBtnEl = document.getElementById('sign-out-btn');
@@ -682,18 +1219,19 @@ async function updateAuthUI() {
     }
 
     renderHeaderAvatar();
+    updateProfileSection();
 }
 
 function switchAuthTab(tab) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.toggle('active', f.id === `${tab}-form`));
     document.getElementById('auth-modal-title').textContent = tab === 'login' ? 'Sign In' : 'Sign Up';
-    authError.style.display = 'none';
+    if (authError) authError.style.display = 'none';
 }
 
 async function handleAuthSubmit(e, type) {
     e.preventDefault();
-    authError.style.display = 'none';
+    if (authError) authError.style.display = 'none';
     
     const emailInput = document.getElementById(type === 'login' ? 'login-email' : 'reg-email');
     const passInput = document.getElementById(type === 'login' ? 'login-password' : 'reg-password');
@@ -702,8 +1240,7 @@ async function handleAuthSubmit(e, type) {
     const password = passInput ? passInput.value : '';
 
     if (!email || !password) {
-        authError.textContent = 'Email and password are required';
-        authError.style.display = 'block';
+        if (authError) { authError.textContent = 'Email and password are required'; authError.style.display = 'block'; }
         return;
     }
 
@@ -723,7 +1260,7 @@ async function handleAuthSubmit(e, type) {
         
         await updateAuthUI();
         closeModal(authModal);
-        showNotification('', type === 'login' ? 'Welcome back!' : 'Account created!');
+        showNotification( type === 'login' ? 'Welcome back!' : 'Account created!');
         
         emailInput.value = '';
         passInput.value = '';
@@ -732,14 +1269,14 @@ async function handleAuthSubmit(e, type) {
         if (nameInput) nameInput.value = '';
         if (dobInput) dobInput.value = '';
     } catch (err) {
-        authError.textContent = err.message;
-        authError.style.display = 'block';
+        if (authError) { authError.textContent = err.message; authError.style.display = 'block'; }
     }
 }
 
-/* ============================================
-   EVENTS INIT
-   ============================================ */
+/* ============================================ */
+/* EVENTS INIT                                  */
+/* ============================================ */
+
 function initEvents() {
     document.getElementById('open-add-modal')?.addEventListener('click', () => openModal(addModal));
     
@@ -753,7 +1290,7 @@ function initEvents() {
     
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (settings.focusMode) { toggleFocusMode(false); showNotification('', 'Focus Mode Disabled'); }
+            if (settings.focusMode) { toggleFocusMode(false); showNotification('Focus Mode Disabled'); }
             closeModal(addModal); closeModal(statsModal); closeModal(settingsModal); closeModal(authModal);
         }
     });
@@ -789,7 +1326,7 @@ function initEvents() {
             if (targetContainer) targetContainer.classList.remove('visible');
             document.querySelector('input[name="track-type"][value="binary"]').checked = true;
             closeModal(addModal); renderGarden();
-            showNotification('', TRANSLATIONS[settings.lang].habitPlanted);
+            showNotification(TRANSLATIONS[settings.lang].habitPlanted);
         } catch (err) { alert(err.message); }
     });
     
@@ -801,24 +1338,31 @@ function initEvents() {
             e.stopPropagation();
             const h = habits.getAll().find(x => x.id === id);
             if (!h) return;
-            const today = new Date().toISOString().split('T')[0];
-            const isCompleted = h.trackType === 'binary' ? h.lastCompleted === today : (h.dailyProgress?.[today] || 0) >= h.target;
+            
+            const today = getTodayStr();
+            const isCompleted = h.trackType === 'binary' 
+                ? h.lastCompleted === today 
+                : (h.dailyProgress?.[today] || 0) >= h.target;
+                
             if (isCompleted) return;
+            
             if (h.trackType === 'quantity') {
                 const cur = h.dailyProgress?.[today] || 0;
                 const amt = prompt(`Enter ${h.unit}:`, cur);
                 if (amt === null) return;
                 habits.toggle(id, parseFloat(amt) || 0);
             } else { habits.toggle(id); }
+            
             renderGarden();
             card.querySelector('.plant-visual')?.classList.add('growing');
             setTimeout(() => card.querySelector('.plant-visual')?.classList.remove('growing'), 250);
-            showNotification('', TRANSLATIONS[settings.lang].progressSaved);
+            showNotification(TRANSLATIONS[settings.lang].progressSaved);
         } else if (e.target.closest('.btn-card-danger')) {
             e.stopPropagation();
-            if (confirm('Remove habit?')) { habits.remove(id); renderGarden(); showNotification('', TRANSLATIONS[settings.lang].removed); }
+            if (confirm('Remove habit?')) { habits.remove(id); renderGarden(); showNotification(TRANSLATIONS[settings.lang].removed); }
         } else { openStats(id); }
     };
+    
     gardenEl?.addEventListener('click', handleCardClick);
     trophyEl?.addEventListener('click', handleCardClick);
     
@@ -832,7 +1376,7 @@ function initEvents() {
     });
     document.getElementById('settings-reset')?.addEventListener('click', () => {
         const t = TRANSLATIONS[settings.lang];
-        if (confirm(t.reset + '?') && confirm('Are you absolutely sure?')) { storage.saveHabits([]); renderGarden(); showNotification('', t.resetDone); }
+        if (confirm(t.reset + '?') && confirm('Are you absolutely sure?')) { storage.saveHabits([]); renderGarden(); showNotification( t.resetDone); }
     });
 
     authTrigger?.addEventListener('click', () => { openModal(authModal); closeUserMenu(); });
@@ -841,18 +1385,19 @@ function initEvents() {
         await updateAuthUI(); 
         renderGarden(); 
         closeUserMenu(); 
-        showNotification('', 'Signed out'); 
+        showNotification('Signed out'); 
     });
-    authModal.querySelector('.modal-close')?.addEventListener('click', () => closeModal(authModal));
-    authModal.querySelector('.modal-overlay')?.addEventListener('click', () => closeModal(authModal));
+    authModal?.querySelector('.modal-close')?.addEventListener('click', () => closeModal(authModal));
+    authModal?.querySelector('.modal-overlay')?.addEventListener('click', () => closeModal(authModal));
     document.querySelectorAll('.auth-tab').forEach(tab => tab.addEventListener('click', () => switchAuthTab(tab.dataset.tab)));
     document.getElementById('login-form')?.addEventListener('submit', (e) => handleAuthSubmit(e, 'login'));
     document.getElementById('register-form')?.addEventListener('submit', (e) => handleAuthSubmit(e, 'register'));
 }
 
-/* ============================================
-   FOCUS MODE
-   ============================================ */
+/* ============================================ */
+/* FOCUS MODE                                   */
+/* ============================================ */
+
 function toggleFocusMode(enabled) {
     settings.focusMode = enabled;
     document.body.classList.toggle('focus-mode', enabled);
@@ -861,9 +1406,10 @@ function toggleFocusMode(enabled) {
     renderGarden();
 }
 
-/* ============================================
-   INITIALIZATION
-   ============================================ */
+/* ============================================ */
+/* INITIALIZATION                               */
+/* ============================================ */
+
 let loadingTimeout = setTimeout(() => {
     if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
         loadingScreen.innerHTML = `<div style="text-align:center; padding:20px;"><div style="font-size:40px; margin-bottom:16px;">⏳</div><p style="font-size:16px; color:var(--text-primary);">Loading taking longer than expected...</p><button onclick="location.reload()" class="btn-primary" style="margin-top:20px; width:auto; padding:10px 20px;">Reload</button></div>`;
@@ -889,9 +1435,13 @@ async function init() {
         renderGarden();
         initEvents();
         initAvatarPicker();
+        initSettingsNavigation();
+        initProfileManagement();
         await updateAuthUI();
+        updateCultivaDatePreview();
+        updateProfileSection();
         
-        console.log('Cultiva v0.2.1 initialized');
+        console.log('Cultiva [0.3.0] initialized');
     } catch (err) {
         console.error('Init failed:', err);
     }

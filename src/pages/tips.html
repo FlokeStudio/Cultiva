@@ -3,578 +3,934 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cultiva — Habit Tips & Inspiration">
-    <title>Habit Tips | Cultiva</title>
+    <meta name="description" content="Cultiva — Science-backed habit strategies from leading psychologists and coaches.">
+    <title>Cultiva | Habit Tips</title>
     <link rel="stylesheet" href="../styles/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
     <style>
-        :root {
-            --apple-black: #000000;
-            --apple-dark: #1d1d1f;
-            --apple-gray: #86868b;
-            --apple-light-gray: #f5f5f7;
-            --apple-white: #ffffff;
-            --apple-blue: #0071e3;
-            --apple-blue-hover: #0077ed;
-            --apple-radius: 18px;
-            --apple-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            --apple-shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
-            --apple-transition: all 0.3s cubic-bezier(0.25,0.1,0.25,1);
+        /* ============================================ */
+        /* CULTIVA TIPS                                 */
+        /* ============================================ */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background: var(--apple-light-gray);
-            color: var(--apple-black);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.47059;
             font-weight: 400;
             letter-spacing: -0.022em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body.theme-dark {
-            background: var(--apple-black);
-            color: var(--apple-white);
-        }
-        body.theme-dark .landing-header { background: rgba(0,0,0,0.8); border-bottom-color: rgba(255,255,255,0.1); }
-        .landing-header {
-            background: rgba(255,255,255,0.8);
+        
+        /* ============================================ */
+        /* NAVIGATION · GLASS                           */
+        /* ============================================ */
+        
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 12px 24px;
+            background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.72);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            transition: background 0.3s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .header-content {
-            max-width: 1200px;
+        
+        body.theme-dark .nav-bar {
+            background: rgba(0, 0, 0, 0.72);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        .nav-container {
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav-logo {
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+        }
+        
+        .nav-link {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-link.active {
+            color: var(--accent-blue);
+        }
+        
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .btn-ghost {
+            padding: 8px 16px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .btn-ghost:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .btn-primary {
+            padding: 8px 18px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            background: var(--accent-blue);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-blue-hover);
+            transform: scale(1.02);
+        }
+        
+        .lang-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        
+        .lang-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .lang-dropdown {
+            position: relative;
+        }
+        
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            min-width: 120px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .lang-dropdown.active .lang-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            text-align: left;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        
+        .lang-option:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .lang-option.active {
+            background: var(--bg-secondary);
+            font-weight: 500;
+        }
+        
+        /* ============================================ */
+        /* HERO                                         */
+        /* ============================================ */
+        
+        .hero {
+            padding: 140px 24px 60px;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+        
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .hero-title {
+            font-size: clamp(40px, 6vw, 64px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        
+        .hero-title-gradient {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 19px;
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin: 0 auto 32px;
+            line-height: 1.5;
+        }
+        
+        /* ============================================ */
+        /* CATEGORY FILTERS                             */
+        /* ============================================ */
+        
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 48px;
+            padding: 0 24px;
+        }
+        
+        .filter-btn {
+            padding: 8px 18px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        
+        .filter-btn:hover {
+            background: var(--bg-quaternary);
+            color: var(--text-primary);
+        }
+        
+        .filter-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        /* ============================================ */
+        /* TIPS GRID                                    */
+        /* ============================================ */
+        
+        .tips-section {
+            padding: 20px 24px 80px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        .tip-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tip-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .tip-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 32px -12px rgba(0, 0, 0, 0.12);
+            border-color: var(--border-medium);
+        }
+        
+        .tip-card:hover::before {
+            opacity: 1;
+        }
+        
+        .tip-category {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 980px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+        
+        .category-mindset { background: rgba(175, 82, 222, 0.12); color: var(--accent-purple); }
+        .category-science { background: rgba(0, 113, 227, 0.12); color: var(--accent-blue); }
+        .category-practical { background: rgba(52, 199, 89, 0.12); color: var(--accent-green); }
+        .category-social { background: rgba(255, 149, 0, 0.12); color: var(--accent-orange); }
+        
+        .tip-icon {
+            font-size: 36px;
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+        
+        .tip-title {
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        
+        .tip-expert {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        
+        .tip-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .tip-action {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent-blue);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: gap 0.2s ease;
+        }
+        
+        .tip-card:hover .tip-action {
+            gap: 10px;
+        }
+        
+        /* ============================================ */
+        /* QUOTE SECTION                                */
+        /* ============================================ */
+        
+        .quote-section {
+            padding: 80px 24px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .quote-container {
+            max-width: 720px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .quote-text {
+            font-size: 28px;
+            font-weight: 500;
+            line-height: 1.4;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+        }
+        
+        .quote-author {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .quote-author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .quote-author-info {
+            text-align: left;
+        }
+        
+        .quote-author-name {
+            font-size: 17px;
+            font-weight: 600;
+        }
+        
+        .quote-author-title {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+        
+        /* ============================================ */
+        /* DESKTOP CTA                                  */
+        /* ============================================ */
+        
+        .desktop-cta {
+            padding: 60px 24px;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+        
+        .desktop-cta-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .desktop-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .desktop-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .desktop-desc {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+        
+        /* ============================================ */
+        /* FOOTER                                       */
+        /* ============================================ */
+        
+        .footer {
+            padding: 40px 24px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-primary);
+        }
+        
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .header-brand h1 {
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin: 0;
-        }
-        .header-brand a {
-            color: inherit;
-            text-decoration: none;
-        }
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-        }
-        .header-link {
-            font-size: 12px;
-            font-weight: 400;
-            color: var(--apple-gray);
-            text-decoration: none;
-            transition: color 0.2s ease;
-            letter-spacing: -0.01em;
-        }
-        .header-link:hover { color: var(--apple-black); }
-        body.theme-dark .header-link { color: #aeaeb2; }
-        body.theme-dark .header-link:hover { color: var(--apple-white); }
-        .header-controls { display: flex; align-items: center; gap: 8px; }
-        .btn-control {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: var(--apple-gray);
-            transition: var(--apple-transition);
-            filter: grayscale(100%) brightness(0.7);
-        }
-        .btn-control:hover {
-            background: rgba(0,0,0,0.05);
-            color: var(--apple-black);
-            filter: grayscale(100%) brightness(1);
-        }
-        body.theme-dark .btn-control:hover { background: rgba(255,255,255,0.1); color: var(--apple-white); }
-        .lang-dropdown { position: relative; }
-        .lang-dropdown-content {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            right: 0;
-            background: var(--apple-white);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 14px;
-            box-shadow: var(--apple-shadow-lg);
-            min-width: 130px;
-            overflow: hidden;
-            z-index: 1000;
-            animation: dropdownFade 0.2s ease;
-        }
-        body.theme-dark .lang-dropdown-content {
-            background: var(--apple-dark);
-            border-color: rgba(255,255,255,0.1);
-        }
-        .lang-dropdown.active .lang-dropdown-content { display: block; }
-        @keyframes dropdownFade { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-        .lang-option {
-            display: block;
-            width: 100%;
-            padding: 10px 16px;
-            background: none;
-            border: none;
-            text-align: left;
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--apple-black);
-            cursor: pointer;
-            transition: background 0.2s ease;
-            letter-spacing: -0.01em;
-        }
-        body.theme-dark .lang-option { color: var(--apple-white); }
-        .lang-option:hover { background: rgba(0,0,0,0.05); }
-        body.theme-dark .lang-option:hover { background: rgba(255,255,255,0.1); }
-        .lang-option.active { font-weight: 500; background: rgba(0,113,227,0.1); color: var(--apple-blue); }
-        .btn-header {
-            padding: 6px 14px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 400;
-            cursor: pointer;
-            transition: var(--apple-transition);
-            border: 1px solid transparent;
-            background: var(--apple-blue);
-            color: #fff;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            letter-spacing: -0.01em;
-        }
-        .btn-header:hover { background: var(--apple-blue-hover); transform: scale(1.02); }
-        .tips-hero {
-            text-align: center;
-            padding: 96px 20px 48px;
-            background: var(--apple-light-gray);
-            transition: background 0.3s ease;
-        }
-        body.theme-dark .tips-hero { background: var(--apple-black); }
-        .tips-title {
-            font-size: clamp(36px, 6vw, 56px);
-            font-weight: 700;
-            margin-bottom: 16px;
-            letter-spacing: -0.03em;
-            line-height: 1.05;
-            background: linear-gradient(90deg, var(--apple-blue), #5856d6, #bf5af2, var(--apple-blue));
-            background-size: 300% 100%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradientShift 8s ease infinite;
-        }
-        @keyframes gradientShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        .tips-subtitle {
-            font-size: clamp(16px, 2.5vw, 19px);
-            max-width: 580px;
-            margin: 0 auto 40px;
-            color: var(--apple-gray);
-            line-height: 1.4;
-            font-weight: 400;
-            letter-spacing: -0.02em;
-        }
-        body.theme-dark .tips-subtitle { color: #aeaeb2; }
-        .tips-carousel-section {
-            padding: 24px 20px 120px;
-            background: var(--apple-light-gray);
-            transition: background 0.3s ease;
-        }
-        body.theme-dark .tips-carousel-section { background: var(--apple-black); }
-        .carousel-container {
-            max-width: 980px;
-            margin: 0 auto;
-            position: relative;
-            overflow: visible;
-        }
-        .carousel-track {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.25,0.1,0.25,1);
-        }
-        .carousel-slide { min-width: 100%; padding: 0 8px; }
-        .tip-card {
-            background: var(--apple-white);
-            border-radius: var(--apple-radius);
-            padding: 44px 36px 40px;
-            text-align: center;
-            box-shadow: var(--apple-shadow);
-            min-height: 460px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: var(--apple-transition);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        body.theme-dark .tip-card {
-            background: var(--apple-dark);
-            border-color: rgba(255,255,255,0.08);
-            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-        }
-        .tip-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--apple-shadow-lg);
-        }
-        .tip-number {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--apple-blue), #5856d6);
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            letter-spacing: -0.02em;
-        }
-        .tip-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            line-height: 1;
-        }
-        .tip-title {
-            font-size: 21px;
-            font-weight: 600;
-            color: var(--apple-black);
-            margin: 0 0 14px;
-            line-height: 1.25;
-            letter-spacing: -0.02em;
-        }
-        body.theme-dark .tip-title { color: var(--apple-white); }
-        .tip-desc {
-            font-size: 15px;
-            color: var(--apple-gray);
-            line-height: 1.5;
-            margin: 0 0 24px;
-            max-width: 440px;
-            font-weight: 400;
-            letter-spacing: -0.01em;
-        }
-        body.theme-dark .tip-desc { color: #aeaeb2; }
-        .tip-action {
+        
+        .footer-copyright {
             font-size: 14px;
-            color: var(--apple-blue);
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            letter-spacing: -0.01em;
-            transition: opacity 0.2s ease;
+            color: var(--text-tertiary);
         }
-        .tip-action:hover { opacity: 0.8; }
-        .carousel-nav {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 28px;
-        }
-        .carousel-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.2);
-            border: none;
-            cursor: pointer;
-            transition: var(--apple-transition);
-        }
-        body.theme-dark .carousel-dot { background: rgba(255,255,255,0.3); }
-        .carousel-dot.active {
-            background: var(--apple-blue);
-            width: 24px;
-            border-radius: 4px;
-        }
-        .app-footer {
-            background: var(--apple-black);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding: 36px 24px 48px;
-            margin-top: auto;
-        }
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 18px;
-            text-align: center;
-        }
+        
         .footer-links {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 14px 26px;
+            gap: 36px;
         }
-        .footer-links a, .footer-link {
-            font-size: 12px;
-            color: #aeaeb2;
+        
+        .footer-links a {
+            font-size: 14px;
+            color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.2s ease;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 400;
-            letter-spacing: -0.01em;
         }
-        .footer-links a:hover, .footer-link:hover {
-            color: var(--apple-white);
-            background: rgba(255,255,255,0.1);
+        
+        .footer-links a:hover {
+            color: var(--text-primary);
         }
-        .footer-brand { margin-top: 4px; }
+        
         .footer-version {
-            font-size: 11px;
-            color: #6e6e73;
-            font-family: "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-            letter-spacing: 0.3px;
-            font-weight: 400;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            color: var(--text-tertiary);
         }
-        @media (max-width: 968px) { .header-nav { display: none; } }
-        @media (max-width: 768px) {
-            .tips-hero { padding: 72px 16px 36px; }
-            .tips-title { font-size: 36px; }
-            .tip-card { padding: 36px 28px 32px; min-height: 420px; }
-            .tip-icon { font-size: 42px; }
-            .tip-title { font-size: 19px; }
-            .tip-desc { font-size: 14px; }
-            .btn-control { width: 30px; height: 30px; font-size: 14px; }
-            .app-footer { padding: 28px 16px 40px; }
-            .footer-links { gap: 12px 20px; }
+        
+        /* ============================================ */
+        /* RESPONSIVE                                   */
+        /* ============================================ */
+        
+        @media (max-width: 968px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .tips-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        @media (max-width: 480px) {
-            .footer-links { flex-direction: column; gap: 10px; }
-            .tip-card { padding: 32px 24px; }
-            .header-content { padding: 10px 16px; }
+        
+        @media (max-width: 640px) {
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero {
+                padding: 120px 20px 40px;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .quote-text {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
 <body>
-    <header class="landing-header">
-        <div class="header-content">
-            <div class="header-brand">
-                <h1><a href="/">Cultiva</a></h1>
+    <!-- ============================================ -->
+    <!-- NAVIGATION                                   -->
+    <!-- ============================================ -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <span>Cultiva</span>
+            </a>
+            <div class="nav-links">
+                <a href="/landing.html#features" class="nav-link" data-i18n="navFeatures">Features</a>
+                <a href="/landing.html#desktop" class="nav-link" data-i18n="navDesktop">Desktop</a>
+                <a href="/pages/tips.html" class="nav-link" data-i18n="navTips">Tips</a>
             </div>
-            <nav class="header-nav">
-
-            </nav>
-            <div class="header-controls">
+            <div class="nav-actions">
                 <div class="lang-dropdown" id="lang-dropdown">
-                    <button class="btn-control" id="lang-btn" aria-label="Select language">🌐</button>
-                    <div class="lang-dropdown-content">
+                    <button class="lang-btn" id="lang-btn">EN</button>
+                    <div class="lang-menu">
                         <button class="lang-option active" data-lang="en">English</button>
                         <button class="lang-option" data-lang="ru">Русский</button>
                     </div>
                 </div>
-                <button class="btn-control" id="theme-toggle" aria-label="Toggle theme">☀️</button>
-                <a href="/" class="btn-header" data-i18n="openApp">Open App</a>
+                <button class="btn-ghost" id="theme-toggle">Dark</button>
+                <a href="/" class="btn-primary" data-i18n="openApp">Open App</a>
             </div>
         </div>
-    </header>
-    <main>
-        <section class="tips-hero">
-            <h1 class="tips-title" data-i18n="pageTitle">Habit Tips</h1>
-            <p class="tips-subtitle" data-i18n="pageDesc">10 science-backed strategies from coaches and psychologists to build lasting positive habits.</p>
-        </section>
-        <section class="tips-carousel-section">
-            <div class="carousel-container">
-                <div class="carousel-track" id="carousel-track">
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">01</span>
-                            <div class="tip-icon">🌅</div>
-                            <h3 class="tip-title" data-i18n="t1Title">Start in the Morning</h3>
-                            <p class="tip-desc" data-i18n="t1Desc">Morning routines set your day's rhythm. Research shows habits formed in the AM stick 50 days faster. Try: water, meditation, or making your bed.</p>
-                            <span class="tip-action" data-i18n="t1Action">→ Add one morning habit</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">02</span>
-                            <div class="tip-icon">🔮</div>
-                            <h3 class="tip-title" data-i18n="t2Title">Visualize Future You</h3>
-                            <p class="tip-desc" data-i18n="t2Desc">Psychologists confirm: imagining your future self strengthens willpower today. Ask: "Will Future Me thank me for this choice?"</p>
-                            <span class="tip-action" data-i18n="t2Action">→ Picture your goal daily</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">03</span>
-                            <div class="tip-icon">🪶</div>
-                            <h3 class="tip-title" data-i18n="t3Title">Take Tiny Steps</h3>
-                            <p class="tip-desc" data-i18n="t3Desc">Stanford's BJ Fogg: big results come from tiny, regular actions. One push-up daily beats 50 once. Your brain will crave more.</p>
-                            <span class="tip-action" data-i18n="t3Action">→ Shrink your habit to 2 minutes</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">04</span>
-                            <div class="tip-icon">🎯</div>
-                            <h3 class="tip-title" data-i18n="t4Title">Focus on Identity</h3>
-                            <p class="tip-desc" data-i18n="t4Desc">James Clear: "You don't rise to your goals, you fall to your systems." Think "I am a runner" not "I want to run 5K".</p>
-                            <span class="tip-action" data-i18n="t4Action">→ Choose identity-based action</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">05</span>
-                            <div class="tip-icon">⏳</div>
-                            <h3 class="tip-title" data-i18n="t5Title">Give Yourself Time</h3>
-                            <p class="tip-desc" data-i18n="t5Desc">Studies show habit formation takes 18-254 days (avg: 66). Your timeline is unique. Focus on joy in the process, not stressful deadlines.</p>
-                            <span class="tip-action" data-i18n="t5Action">→ Celebrate showing up</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">06</span>
-                            <div class="tip-icon">🛋️</div>
-                            <h3 class="tip-title" data-i18n="t6Title">Make It Convenient</h3>
-                            <p class="tip-desc" data-i18n="t6Desc">Remove friction: place water on your desk, prep workout clothes the night before. Psychologist Wendy Wood slept in running gear to make jogging effortless.</p>
-                            <span class="tip-action" data-i18n="t6Action">→ Eliminate one obstacle</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">07</span>
-                            <div class="tip-icon">📝</div>
-                            <h3 class="tip-title" data-i18n="t7Title">Remember Your Why</h3>
-                            <p class="tip-desc" data-i18n="t7Desc">Therapist Amy Morin: stress triggers old habits. Keep a visible list of your top 10 reasons for this habit. Review it when motivation dips.</p>
-                            <span class="tip-action" data-i18n="t7Action">→ Write your "Why" list</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">08</span>
-                            <div class="tip-icon">🔗</div>
-                            <h3 class="tip-title" data-i18n="t8Title">Anchor to a Trigger</h3>
-                            <p class="tip-desc" data-i18n="t8Desc">Link new habits to existing routines: "After I brush my teeth, I will meditate". Triggers automate behavior without willpower.</p>
-                            <span class="tip-action" data-i18n="t8Action">→ Pick your trigger today</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">09</span>
-                            <div class="tip-icon">🤝</div>
-                            <h3 class="tip-title" data-i18n="t9Title">Get Support</h3>
-                            <p class="tip-desc" data-i18n="t9Desc">Your environment shapes habits. Join a "success team" like coach Barbara Sher suggests. Share progress, celebrate wins together.</p>
-                            <span class="tip-action" data-i18n="t9Action">→ Invite a habit buddy</span>
-                        </article>
-                    </div>
-                    <div class="carousel-slide">
-                        <article class="tip-card">
-                            <span class="tip-number">10</span>
-                            <div class="tip-icon">🎁</div>
-                            <h3 class="tip-title" data-i18n="t10Title">Reward Yourself</h3>
-                            <p class="tip-desc" data-i18n="t10Desc">Stephen Covey: rewards reinforce new behavior. After completing your habit, pause and acknowledge: "I did it!" Your brain loves positive feedback.</p>
-                            <span class="tip-action" data-i18n="t10Action">→ Plan a small celebration</span>
-                        </article>
-                    </div>
+    </nav>
+
+    <!-- ============================================ -->
+    <!-- HERO                                         -->
+    <!-- ============================================ -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1 class="hero-title">
+                <span data-i18n="heroTitle1">Build habits</span><br>
+                <span class="hero-title-gradient" data-i18n="heroTitle2">that actually stick.</span>
+            </h1>
+            <p class="hero-subtitle" data-i18n="heroDesc">
+                Insights from leading psychologists, behavioral scientists, and habit coaches — 
+                distilled into actionable advice.
+            </p>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- FILTERS                                      -->
+    <!-- ============================================ -->
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all" data-i18n="filterAll">All Tips</button>
+        <button class="filter-btn" data-filter="mindset" data-i18n="filterMindset">Mindset</button>
+        <button class="filter-btn" data-filter="science" data-i18n="filterScience">Science</button>
+        <button class="filter-btn" data-filter="practical" data-i18n="filterPractical">Practical</button>
+        <button class="filter-btn" data-filter="social" data-i18n="filterSocial">Social</button>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TIPS GRID                                    -->
+    <!-- ============================================ -->
+    <section class="tips-section">
+        <div class="tips-grid" id="tips-grid"></div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- EXPERT QUOTE                                 -->
+    <!-- ============================================ -->
+    <section class="quote-section">
+        <div class="quote-container">
+            <div class="quote-text" data-i18n="quoteText">
+                "You do not rise to the level of your goals. 
+                You fall to the level of your systems."
+            </div>
+            <div class="quote-author">
+                <div class="quote-author-avatar">JC</div>
+                <div class="quote-author-info">
+                    <div class="quote-author-name">James Clear</div>
+                    <div class="quote-author-title" data-i18n="quoteAuthorTitle">Author of Atomic Habits</div>
                 </div>
-                <div class="carousel-nav" id="carousel-dots"></div>
             </div>
-        </section>
-    </main>
-    <footer class="app-footer">
-        <div class="footer-content">
-            <nav class="footer-links">
-                <a href="/src/index.html" data-i18n="footerHome">Home</a>
-                <a href="/landing.html" data-i18n="footerAbout">About</a>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- DESKTOP CTA                                  -->
+    <!-- ============================================ -->
+    <section class="desktop-cta">
+        <div class="desktop-cta-container">
+            <div class="desktop-icon">🖥️</div>
+            <h2 class="desktop-title" data-i18n="desktopTitle">Prefer desktop?</h2>
+            <p class="desktop-desc" data-i18n="desktopDesc">
+                Cultiva Desktop is available for Windows — offline-first, system-integrated, and completely free.
+            </p>
+            <a href="https://github.com/krwg/CultivaDesktop/releases/latest" target="_blank" class="btn-primary" style="padding: 14px 28px; font-size: 15px;" data-i18n="desktopDownload">
+                Download for Windows →
+            </a>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                       -->
+    <!-- ============================================ -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-copyright" data-i18n="copyright">Cultiva</div>
+            <div class="footer-links">
+                <a href="/" data-i18n="footerHome">Home</a>
                 <a href="/pages/changelog.html" data-i18n="footerChangelog">What's New</a>
-                <a href="/pages/tips.html" class="footer-link" data-i18n="footerTips">Tips</a>
-                <a href="/pages/privacy.html">Privacy</a>                
-                <a href="https://github.com/krwg/cultiva" target="_blank" rel="noopener">GitHub</a>
-            </nav>
-            <div class="footer-brand">
-                <span class="footer-version">[0.2.2] Aspen 2026</span>
+                <a href="/pages/tips.html" data-i18n="footerTips">Tips</a>
+                <a href="/pages/privacy.html" data-i18n="footerPrivacy">Privacy</a>
+                <a href="https://github.com/krwg/cultiva" target="_blank">GitHub</a>
             </div>
+            <div class="footer-version">[0.3.0] Sequoia</div>
         </div>
     </footer>
+
     <script>
-        const TRANSLATIONS = {
-            en: {
-                navTips: 'Tips', navChangelog: 'Changelog', openApp: 'Open App',
-                pageTitle: 'Habit Tips', pageDesc: '10 science-backed strategies from coaches and psychologists to build lasting positive habits.',
-                t1Title: 'Start in the Morning', t1Desc: 'Morning routines set your day\'s rhythm. Research shows habits formed in the AM stick 50 days faster. Try: water, meditation, or making your bed.', t1Action: '→ Add one morning habit',
-                t2Title: 'Visualize Future You', t2Desc: 'Psychologists confirm: imagining your future self strengthens willpower today. Ask: "Will Future Me thank me for this choice?"', t2Action: '→ Picture your goal daily',
-                t3Title: 'Take Tiny Steps', t3Desc: 'Stanford\'s BJ Fogg: big results come from tiny, regular actions. One push-up daily beats 50 once. Your brain will crave more.', t3Action: '→ Shrink your habit to 2 minutes',
-                t4Title: 'Focus on Identity', t4Desc: 'James Clear: "You don\'t rise to your goals, you fall to your systems." Think "I am a runner" not "I want to run 5K".', t4Action: '→ Choose identity-based action',
-                t5Title: 'Give Yourself Time', t5Desc: 'Studies show habit formation takes 18-254 days (avg: 66). Your timeline is unique. Focus on joy in the process, not stressful deadlines.', t5Action: '→ Celebrate showing up',
-                t6Title: 'Make It Convenient', t6Desc: 'Remove friction: place water on your desk, prep workout clothes the night before. Psychologist Wendy Wood slept in running gear to make jogging effortless.', t6Action: '→ Eliminate one obstacle',
-                t7Title: 'Remember Your Why', t7Desc: 'Therapist Amy Morin: stress triggers old habits. Keep a visible list of your top 10 reasons for this habit. Review it when motivation dips.', t7Action: '→ Write your "Why" list',
-                t8Title: 'Anchor to a Trigger', t8Desc: 'Link new habits to existing routines: "After I brush my teeth, I will meditate". Triggers automate behavior without willpower.', t8Action: '→ Pick your trigger today',
-                t9Title: 'Get Support', t9Desc: 'Your environment shapes habits. Join a "success team" like coach Barbara Sher suggests. Share progress, celebrate wins together.', t9Action: '→ Invite a habit buddy',
-                t10Title: 'Reward Yourself', t10Desc: 'Stephen Covey: rewards reinforce new behavior. After completing your habit, pause and acknowledge: "I did it!" Your brain loves positive feedback.', t10Action: '→ Plan a small celebration',
-                footerHome: 'Home', footerAbout: 'About', footerChangelog: "What's New", footerShortcuts: 'Shortcuts', footerTips: 'Tips'
-            },
-            ru: {
-                navTips: 'Советы', navChangelog: 'Обновления', openApp: 'Открыть',
-                pageTitle: 'Советы по привычкам', pageDesc: '10 научно обоснованных стратегий от коучей и психологов для формирования устойчивых привычек.',
-                t1Title: 'Начинайте утром', t1Desc: 'Утренние ритуалы задают ритм дня. Исследования: привычки, сформированные утром, закрепляются на 50 дней быстрее. Попробуйте: вода, медитация, заправленная кровать.', t1Action: '→ Добавьте утреннюю привычку',
-                t2Title: 'Представьте будущее «Я»', t2Desc: 'Психологи подтверждают: визуализация будущего «Я» укрепляет силу воли сегодня. Спросите: «Поблагодарит ли меня будущее «Я» за этот выбор?»', t2Action: '→ Визуализируйте цель ежедневно',
-                t3Title: 'Делайте крошечные шаги', t3Desc: 'Би Джей Фогг (Стэнфорд): большие результаты — от маленьких, но регулярных действий. Одно отжимание в день лучше 50 раз в месяц. Мозг захочет больше.', t3Action: '→ Сократите привычку до 2 минут',
-                t4Title: 'Фокус на идентичности', t4Desc: 'Джеймс Клир: «Вы не поднимаетесь до целей, вы опускаетесь до систем». Думайте «Я бегун», а не «Хочу пробежать 5К».', t4Action: '→ Выберите действие на основе идентичности',
-                t5Title: 'Дайте себе время', t5Desc: 'Исследования: формирование привычки занимает 18-254 дня (в среднем 66). Ваш срок уникален. Фокусируйтесь на радости процесса, а не на дедлайнах.', t5Action: '→ Празднуйте участие',
-                t6Title: 'Сделайте это удобным', t6Desc: 'Уберите трение: поставьте воду на стол, приготовьте форму с вечера. Психолог Венди Вуд спала в спортивной форме, чтобы бег стал лёгким.', t6Action: '→ Устраните одно препятствие',
-                t7Title: 'Помните своё «Зачем»', t7Desc: 'Терапевт Эми Морин: стресс возвращает к старым привычкам. Держите на виду список из 10 причин для этой привычки. Перечитывайте, когда мотивация падает.', t7Action: '→ Напишите список «Зачем»',
-                t8Title: 'Привяжите к триггеру', t8Desc: 'Свяжите новую привычку с существующей: «После чистки зубов я помедитирую». Триггеры автоматизируют поведение без силы воли.', t8Action: '→ Выберите свой триггер',
-                t9Title: 'Заручитесь поддержкой', t9Desc: 'Окружение формирует привычки. Создайте «команду успеха», как советует коуч Барбара Шер. Делитесь прогрессом, празднуйте победы вместе.', t9Action: '→ Пригласите напарника',
-                t10Title: 'Награждайте себя', t10Desc: 'Стивен Кови: награды закрепляют новое поведение. После выполнения привычки сделайте паузу и признайте: «Я сделал это!» Мозг любит позитивную обратную связь.', t10Action: '→ Запланируйте маленькое празднование',
-                footerHome: 'Главная', footerAbout: 'О проекте', footerChangelog: 'Что нового', footerShortcuts: 'Клавиши', footerTips: 'Советы'
+        (function() {
+            // ============================================ */
+            // DATA                                         */
+            // ============================================ */
+            
+            const TIPS_DATA = [
+                { category: 'practical', icon: '🌅', expert: 'BJ Fogg, PhD · Stanford', titleKey: 't1Title', descKey: 't1Desc', actionKey: 't1Action' },
+                { category: 'mindset', icon: '🔮', expert: 'Dr. Kelly McGonigal · Stanford', titleKey: 't2Title', descKey: 't2Desc', actionKey: 't2Action' },
+                { category: 'science', icon: '🪶', expert: 'BJ Fogg, PhD · Stanford', titleKey: 't3Title', descKey: 't3Desc', actionKey: 't3Action' },
+                { category: 'mindset', icon: '🎯', expert: 'James Clear · Author', titleKey: 't4Title', descKey: 't4Desc', actionKey: 't4Action' },
+                { category: 'science', icon: '⏳', expert: 'Dr. Phillippa Lally · UCL', titleKey: 't5Title', descKey: 't5Desc', actionKey: 't5Action' },
+                { category: 'practical', icon: '🛋️', expert: 'Dr. Wendy Wood · USC', titleKey: 't6Title', descKey: 't6Desc', actionKey: 't6Action' },
+                { category: 'mindset', icon: '📝', expert: 'Amy Morin, LCSW · Psychotherapist', titleKey: 't7Title', descKey: 't7Desc', actionKey: 't7Action' },
+                { category: 'practical', icon: '🔗', expert: 'Dr. David Neal · Duke', titleKey: 't8Title', descKey: 't8Desc', actionKey: 't8Action' },
+                { category: 'social', icon: '🤝', expert: 'Barbara Sher · Career Coach', titleKey: 't9Title', descKey: 't9Desc', actionKey: 't9Action' },
+                { category: 'science', icon: '🎁', expert: 'Dr. Stephen Covey · Author', titleKey: 't10Title', descKey: 't10Desc', actionKey: 't10Action' },
+                { category: 'practical', icon: '📊', expert: 'Dr. Gail Matthews · Dominican University', titleKey: 't11Title', descKey: 't11Desc', actionKey: 't11Action' },
+                { category: 'mindset', icon: '🧠', expert: 'Dr. Carol Dweck · Stanford', titleKey: 't12Title', descKey: 't12Desc', actionKey: 't12Action' }
+            ];
+            
+            // ============================================ */
+            // TRANSLATIONS                                 */
+            // ============================================ */
+            
+            const TRANSLATIONS = {
+                en: {
+                    navFeatures: 'Features', navDesktop: 'Desktop', navTips: 'Tips', openApp: 'Open App',
+                    heroBadge: '10 science-backed strategies',
+                    heroTitle1: 'Build habits', heroTitle2: 'that actually stick.',
+                    heroDesc: 'Insights from leading psychologists, behavioral scientists, and habit coaches — distilled into actionable advice.',
+                    filterAll: 'All Tips', filterMindset: 'Mindset', filterScience: 'Science', filterPractical: 'Practical', filterSocial: 'Social',
+                    t1Title: 'Start in the Morning', t1Desc: 'Morning routines set your day\'s rhythm. Research shows habits formed in the AM stick 50 days faster. Try: water, meditation, or making your bed.', t1Action: 'Add one morning habit →',
+                    t2Title: 'Visualize Future You', t2Desc: 'Imagining your future self strengthens willpower today. Ask: "Will Future Me thank me for this choice?"', t2Action: 'Picture your goal daily →',
+                    t3Title: 'Take Tiny Steps', t3Desc: 'Big results come from tiny, regular actions. One push-up daily beats 50 once. Your brain will crave more.', t3Action: 'Shrink your habit to 2 minutes →',
+                    t4Title: 'Focus on Identity', t4Desc: '"You don\'t rise to your goals, you fall to your systems." Think "I am a runner" not "I want to run 5K".', t4Action: 'Choose identity-based action →',
+                    t5Title: 'Give Yourself Time', t5Desc: 'Studies show habit formation takes 18-254 days (avg: 66). Your timeline is unique. Focus on joy in the process.', t5Action: 'Celebrate showing up →',
+                    t6Title: 'Make It Convenient', t6Desc: 'Remove friction: place water on your desk, prep workout clothes the night before. Make the right choice the easy choice.', t6Action: 'Eliminate one obstacle →',
+                    t7Title: 'Remember Your Why', t7Desc: 'Stress triggers old habits. Keep a visible list of your top 10 reasons for this habit. Review it when motivation dips.', t7Action: 'Write your "Why" list →',
+                    t8Title: 'Anchor to a Trigger', t8Desc: 'Link new habits to existing routines: "After I brush my teeth, I will meditate". Triggers automate behavior.', t8Action: 'Pick your trigger today →',
+                    t9Title: 'Get Support', t9Desc: 'Your environment shapes habits. Share progress with a friend or join a community. Celebrate wins together.', t9Action: 'Invite a habit buddy →',
+                    t10Title: 'Reward Yourself', t10Desc: 'Rewards reinforce new behavior. After completing your habit, pause and acknowledge: "I did it!"', t10Action: 'Plan a small celebration →',
+                    t11Title: 'Write It Down', t11Desc: 'People who write down their goals are 42% more likely to achieve them. Make your habit tangible on paper.', t11Action: 'Write your habit now →',
+                    t12Title: 'Embrace the Plateau', t12Desc: 'Progress isn\'t linear. The "plateau of latent potential" is where most quit. Trust the process and keep showing up.', t12Action: 'Trust the process →',
+                    quoteText: '"You do not rise to the level of your goals. You fall to the level of your systems."',
+                    quoteAuthorTitle: 'Author of Atomic Habits',
+                    desktopTitle: 'Prefer desktop?',
+                    desktopDesc: 'Cultiva Desktop is available for Windows — offline, system-integrated, and completely free.',
+                    desktopDownload: 'Download for Windows →',
+                    copyright: 'Cultiva',
+                    footerHome: 'Home', footerChangelog: 'What\'s New', footerTips: 'Tips', footerPrivacy: 'Privacy'
+                },
+                ru: {
+                    navFeatures: 'Возможности', navDesktop: 'Десктоп', navTips: 'Советы', openApp: 'Открыть',
+                    heroBadge: '10 научно обоснованных стратегий',
+                    heroTitle1: 'Создавай привычки,', heroTitle2: 'которые приживаются.',
+                    heroDesc: 'Идеи от ведущих психологов, поведенческих учёных и коучей — сжатые в практические советы.',
+                    filterAll: 'Все советы', filterMindset: 'Мышление', filterScience: 'Наука', filterPractical: 'Практика', filterSocial: 'Социум',
+                    t1Title: 'Начинайте утром', t1Desc: 'Утренние ритуалы задают ритм дня. Привычки, сформированные утром, закрепляются на 50 дней быстрее. Попробуйте: вода, медитация, заправленная кровать.', t1Action: 'Добавьте утреннюю привычку →',
+                    t2Title: 'Представьте будущее «Я»', t2Desc: 'Визуализация будущего «Я» укрепляет силу воли сегодня. Спросите: «Поблагодарит ли меня будущее «Я» за этот выбор?»', t2Action: 'Визуализируйте цель ежедневно →',
+                    t3Title: 'Делайте крошечные шаги', t3Desc: 'Большие результаты — от маленьких, но регулярных действий. Одно отжимание в день лучше 50 раз в месяц.', t3Action: 'Сократите привычку до 2 минут →',
+                    t4Title: 'Фокус на идентичности', t4Desc: '«Вы не поднимаетесь до целей, вы опускаетесь до систем». Думайте «Я бегун», а не «Хочу пробежать 5К».', t4Action: 'Выберите действие на основе идентичности →',
+                    t5Title: 'Дайте себе время', t5Desc: 'Формирование привычки занимает 18-254 дня (в среднем 66). Ваш срок уникален. Фокусируйтесь на радости процесса.', t5Action: 'Празднуйте участие →',
+                    t6Title: 'Сделайте это удобным', t6Desc: 'Уберите трение: поставьте воду на стол, приготовьте форму с вечера. Сделайте правильный выбор лёгким.', t6Action: 'Устраните одно препятствие →',
+                    t7Title: 'Помните своё «Зачем»', t7Desc: 'Стресс возвращает к старым привычкам. Держите на виду список из 10 причин. Перечитывайте, когда мотивация падает.', t7Action: 'Напишите список «Зачем» →',
+                    t8Title: 'Привяжите к триггеру', t8Desc: 'Свяжите новую привычку с существующей: «После чистки зубов я помедитирую». Триггеры автоматизируют поведение.', t8Action: 'Выберите свой триггер →',
+                    t9Title: 'Заручитесь поддержкой', t9Desc: 'Окружение формирует привычки. Делитесь прогрессом с другом или присоединяйтесь к сообществу.', t9Action: 'Пригласите напарника →',
+                    t10Title: 'Награждайте себя', t10Desc: 'Награды закрепляют новое поведение. После выполнения привычки сделайте паузу и признайте: «Я сделал это!»', t10Action: 'Запланируйте маленькое празднование →',
+                    t11Title: 'Записывайте', t11Desc: 'Люди, записывающие цели, достигают их на 42% чаще. Сделайте привычку осязаемой на бумаге.', t11Action: 'Запишите свою привычку →',
+                    t12Title: 'Примите плато', t12Desc: 'Прогресс нелинеен. «Плато скрытого потенциала» — момент, где большинство сдаётся. Доверьтесь процессу.', t12Action: 'Доверьтесь процессу →',
+                    quoteText: '"Вы не поднимаетесь до уровня своих целей. Вы опускаетесь до уровня своих систем."',
+                    quoteAuthorTitle: 'Автор книги «Атомные привычки»',
+                    desktopTitle: 'Предпочитаете десктоп-приложение?',
+                    desktopDesc: 'Cultiva Desktop доступен для Windows — офлайн, интегрированный в систему, полностью бесплатный.',
+                    desktopDownload: 'Скачать для Windows →',
+                    copyright: 'Cultiva',
+                    footerHome: 'Главная', footerChangelog: 'Что нового', footerTips: 'Советы', footerPrivacy: 'Приватность'
+                }
+            };
+            
+            // ============================================ */
+            // STATE                                        */
+            // ============================================ */
+            
+            let currentLang = localStorage.getItem('cultiva-lang') || 'en';
+            let currentTheme = localStorage.getItem('cultiva-theme') || 'auto';
+            let currentFilter = 'all';
+            
+            // ============================================ */
+            // RENDER TIPS                                  */
+            // ============================================ */
+            
+            function renderTips() {
+                const grid = document.getElementById('tips-grid');
+                const t = TRANSLATIONS[currentLang];
+                
+                const filteredTips = currentFilter === 'all' 
+                    ? TIPS_DATA 
+                    : TIPS_DATA.filter(tip => tip.category === currentFilter);
+                
+                grid.innerHTML = filteredTips.map(tip => `
+                    <article class="tip-card" data-category="${tip.category}">
+                        <span class="tip-category category-${tip.category}" data-i18n="category${tip.category.charAt(0).toUpperCase() + tip.category.slice(1)}">${getCategoryName(tip.category)}</span>
+                        <div class="tip-icon">${tip.icon}</div>
+                        <h3 class="tip-title">${t[tip.titleKey]}</h3>
+                        <div class="tip-expert">${tip.expert}</div>
+                        <p class="tip-desc">${t[tip.descKey]}</p>
+                        <span class="tip-action">${t[tip.actionKey]}</span>
+                    </article>
+                `).join('');
             }
-        };
-        const themeToggle = document.getElementById('theme-toggle');
-        const savedTheme = localStorage.getItem('cultiva-theme') || 'auto';
-        let currentTheme = savedTheme;
-        function applyTheme(theme) {
-            document.body.classList.remove('theme-light', 'theme-dark');
-            if (theme === 'light') { document.body.classList.add('theme-light'); themeToggle.textContent = '☀️'; }
-            else if (theme === 'dark') { document.body.classList.add('theme-dark'); themeToggle.textContent = '🌙'; }
-            else { const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; themeToggle.textContent = prefersDark ? '🌙' : '☀️'; }
-            localStorage.setItem('cultiva-theme', theme);
-        }
-        themeToggle.addEventListener('click', () => { currentTheme = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'auto' : 'light'; applyTheme(currentTheme); });
-        applyTheme(currentTheme);
-        const langDropdown = document.getElementById('lang-dropdown');
-        const langBtn = document.getElementById('lang-btn');
-        const langOptions = document.querySelectorAll('.lang-option');
-        let currentLang = localStorage.getItem('cultiva-lang') || 'en';
-        function applyLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('cultiva-lang', lang);
-            const t = TRANSLATIONS[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if (t[key]) el.textContent = t[key]; });
-            langOptions.forEach(opt => { opt.classList.toggle('active', opt.dataset.lang === lang); });
-        }
-        langBtn.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('active'); });
-        document.addEventListener('click', () => { langDropdown.classList.remove('active'); });
-        langOptions.forEach(opt => { opt.addEventListener('click', (e) => { e.stopPropagation(); applyLanguage(opt.dataset.lang); }); });
-        applyLanguage(currentLang);
-        const track = document.getElementById('carousel-track');
-        const dotsContainer = document.getElementById('carousel-dots');
-        const slides = document.querySelectorAll('.carousel-slide');
-        let currentSlide = 0;
-        slides.forEach((_, i) => { const dot = document.createElement('button'); dot.className = 'carousel-dot' + (i === 0 ? ' active' : ''); dot.setAttribute('aria-label', 'Slide ' + (i+1)); dot.dataset.slide = i; dotsContainer.appendChild(dot); });
-        const dots = document.querySelectorAll('.carousel-dot');
-        function goToSlide(index) { track.style.transform = `translateX(-${index * 100}%)`; dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); }); currentSlide = index; }
-        dots.forEach(dot => { dot.addEventListener('click', () => { goToSlide(parseInt(dot.dataset.slide)); }); });
-        let autoSlide = setInterval(() => { currentSlide = (currentSlide + 1) % slides.length; goToSlide(currentSlide); }, 6000);
-        track.addEventListener('touchstart', () => { clearInterval(autoSlide); });
-        track.addEventListener('touchend', () => { autoSlide = setInterval(() => { currentSlide = (currentSlide + 1) % slides.length; goToSlide(currentSlide); }, 6000); });
+            
+            function getCategoryName(cat) {
+                const t = TRANSLATIONS[currentLang];
+                const map = { mindset: 'Mindset', science: 'Science', practical: 'Practical', social: 'Social' };
+                return map[cat] || cat;
+            }
+            
+            // ============================================ */
+            // APPLY LANGUAGE                               */
+            // ============================================ */
+            
+            function applyLanguage(lang) {
+                currentLang = lang;
+                const t = TRANSLATIONS[lang];
+                
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.dataset.i18n;
+                    if (t[key]) {
+                        if (key === 'heroTitle1' || key === 'heroTitle2') {
+                            el.innerHTML = t[key];
+                        } else {
+                            el.textContent = t[key];
+                        }
+                    }
+                });
+                
+                document.querySelectorAll('.lang-option').forEach(opt => {
+                    opt.classList.toggle('active', opt.dataset.lang === lang);
+                });
+                
+                document.documentElement.lang = lang;
+                localStorage.setItem('cultiva-lang', lang);
+                
+                renderTips();
+                updateLangButton();
+            }
+            
+            // ============================================ */
+            // APPLY THEME                                  */
+            // ============================================ */
+            
+            function applyTheme(theme) {
+                currentTheme = theme;
+                const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                
+                document.body.classList.remove('theme-light', 'theme-dark');
+                document.body.classList.add(isDark ? 'theme-dark' : 'theme-light');
+                
+                const themeToggle = document.getElementById('theme-toggle');
+                if (themeToggle) {
+                    themeToggle.textContent = isDark ? 'Light' : 'Dark';
+                }
+                
+                localStorage.setItem('cultiva-theme', theme);
+            }
+            
+            function updateLangButton() {
+                const langBtn = document.getElementById('lang-btn');
+                if (langBtn) {
+                    langBtn.textContent = currentLang.toUpperCase();
+                }
+            }
+            
+            // ============================================ */
+            // INITIALIZE                                   */
+            // ============================================ */
+            
+            function init() {
+                applyLanguage(currentLang);
+                applyTheme(currentTheme);
+                renderTips();
+                updateLangButton();
+                
+                // Filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        currentFilter = btn.dataset.filter;
+                        renderTips();
+                    });
+                });
+                
+                // Theme toggle
+                document.getElementById('theme-toggle')?.addEventListener('click', () => {
+                    const next = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'auto' : 'light';
+                    applyTheme(next);
+                });
+                
+                // Language dropdown
+                const langDropdown = document.getElementById('lang-dropdown');
+                const langBtn = document.getElementById('lang-btn');
+                
+                langBtn?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    langDropdown.classList.toggle('active');
+                });
+                
+                document.addEventListener('click', () => {
+                    langDropdown?.classList.remove('active');
+                });
+                
+                document.querySelectorAll('.lang-option').forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        applyLanguage(opt.dataset.lang);
+                        langDropdown?.classList.remove('active');
+                    });
+                });
+                
+                // System theme change
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                    if (currentTheme === 'auto') {
+                        applyTheme('auto');
+                    }
+                });
+            }
+            
+            init();
+        })();
     </script>
 </body>
 </html>

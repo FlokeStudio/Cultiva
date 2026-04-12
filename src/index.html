@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Cultiva - Grow your habits, grow yourself">
     <title>Home | Cultiva</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+    <!-- ============================================ -->
+    <!-- STYLES AND ICONS                              -->
+    <!-- ============================================ -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.ico">
 </head>
 <body>
     <div class="loading-screen" id="loading-screen">
@@ -17,14 +20,17 @@
         <p class="loading-text">Syncing your garden...</p>
     </div>
 
+    <!-- ============================================ -->
+    <!-- HEADER                                       -->
+    <!-- ============================================ -->
     <header class="app-header">
         <div class="header-content">
             <div class="header-brand">
-                <h1><a href="/index.html" style="color: inherit; text-decoration: none;">Cultiva</a></h1>
+                <h1><a href="index.html" style="color: inherit; text-decoration: none;">Cultiva</a></h1>
             </div>
             <div class="header-actions">
                 <a href="/pages/changelog.html" class="header-link" data-i18n="whatsNew">What's New</a>
-                <a href="/pages/calendar.html" class="header-link" data-i18n="calendar" title="Calendar">Calendar</a>
+                <a href="/pages/calendar/index.html" class="header-link" data-i18n="calendar" title="Calendar">Calendar</a>
                 <button class="add-btn" id="open-add-modal" aria-label="Add new habit">+</button>
                 
                 <div class="user-menu" id="user-menu">
@@ -74,6 +80,9 @@
         </div>
     </header>
 
+    <!-- ============================================ -->
+    <!-- MAIN CONTENT                                 -->
+    <!-- ============================================ -->
     <main class="app-main">
         <section class="garden-section">
             <div class="section-header">
@@ -92,6 +101,9 @@
         </section>
     </main>
 
+    <!-- ============================================ -->
+    <!-- MODAL: ADD HABIT                             -->
+    <!-- ============================================ -->
     <div class="modal" id="add-modal">
         <div class="modal-overlay"></div>
         <div class="modal-sheet">
@@ -143,6 +155,9 @@
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- MODAL: STATS                                 -->
+    <!-- ============================================ -->
     <div class="modal" id="stats-modal">
         <div class="modal-overlay"></div>
         <div class="modal-sheet modal-sheet-large">
@@ -159,83 +174,358 @@
         </div>
     </div>
 
-    <div class="modal" id="settings-modal">
-        <div class="modal-overlay"></div>
-        <div class="modal-sheet">
-            <div class="modal-header"><h2 data-i18n="settings">Settings</h2><button class="modal-close" aria-label="Close">&times;</button></div>
-            <div class="modal-body">
-                <div class="settings-group">
-                    <h3 class="settings-group-title" data-i18n="appearance">Appearance & Language</h3>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="language">Language</span><span class="setting-desc" data-i18n="languageDesc">Interface language</span></div><select id="lang-select" class="select-input select-small"><option value="en">English</option><option value="ru">Русский</option></select></div>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="theme">Theme</span><span class="setting-desc" data-i18n="themeDesc">Choose your preferred look</span></div>
+
+<!-- ============================================ -->
+<!-- MODAL: SETTINGS (IPADOS-STYLE)               -->
+<!-- ============================================ -->
+<div class="modal" id="settings-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-sheet settings-sheet-ipados">
+        <div class="modal-header settings-header-ipados">
+            <h2 data-i18n="settings">Settings</h2>
+            <button class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body settings-body-ipados">
+            
+            <!-- ============================================ -->
+            <!-- LEFT SIDEBAR - SECTIONS                       -->
+            <!-- ============================================ -->
+            <div class="settings-sidebar" id="settings-sidebar">
+                
+                <div class="settings-sidebar-item active" data-section="profile">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="profile">Profile</span>
+                </div>
+                
+                <div class="settings-sidebar-item" data-section="appearance">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="appearance">Appearance</span>
+                </div>
+                
+                <div class="settings-sidebar-item" data-section="garden">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="gardenSettings">Garden</span>
+                </div>
+                
+                <div class="settings-sidebar-item" data-section="calendar">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="calendarTime">Calendar</span>
+                </div>
+                
+                <div class="settings-sidebar-item" data-section="data">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="dataStorage">Data</span>
+                </div>
+                
+                <div class="settings-sidebar-item settings-sidebar-disabled" data-section="notifications">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="notifications">Notifications</span>
+                </div>
+                
+                <!-- НОВЫЙ РАЗДЕЛ: ОБНОВЛЕНИЯ -->
+                <div class="settings-sidebar-item settings-sidebar-disabled" data-section="updates">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="updates">Updates</span>
+                </div>
+                
+                <div class="settings-sidebar-item" data-section="about">
+                    <div class="sidebar-icon-wrapper">
+                        <span class="sidebar-icon"></span>
+                    </div>
+                    <span class="sidebar-label" data-i18n="aboutHelp">About</span>
+                </div>
+                
+            </div>
+            
+            <!-- ============================================ -->
+            <!-- RIGHT CONTENT - DYNAMIC                       -->
+            <!-- ============================================ -->
+            <div class="settings-content" id="settings-content">
+                
+                <!-- Empty state -->
+                <div class="settings-empty-state" id="settings-empty">
+                    <div class="empty-state-icon">⚙️</div>
+                    <div class="empty-state-title" data-i18n="selectSetting">Select a setting</div>
+                    <div class="empty-state-desc" data-i18n="selectSettingDesc">Choose a category from the sidebar</div>
+                </div>
+ 
+
+<!-- ============================================ -->
+<!-- PROFILE SECTION (БЕЗ SIGN IN/OUT)             -->
+<!-- ============================================ -->
+<div class="settings-section-content" id="section-profile">
+    <div class="profile-header">
+        <div class="profile-avatar-large" id="settings-profile-avatar">
+            <span class="profile-avatar-emoji" id="settings-avatar-emoji">🌱</span>
+            <img id="settings-avatar-img" style="display: none;">
+        </div>
+        <div class="profile-info">
+            <div class="profile-name" id="settings-profile-name">Guest User</div>
+            <div class="profile-email" id="settings-profile-email">Local Storage</div>
+        </div>
+    </div>
+    
+    <div class="settings-divider"></div>
+    
+    <!-- Change Avatar -->
+    <div class="setting-item" id="settings-open-avatar-picker">
+        <div class="setting-info">
+            <span class="setting-label" data-i18n="changeAvatar">Change Avatar</span>
+            <span class="setting-desc" data-i18n="avatarDesc">Customize your profile picture</span>
+        </div>
+        <span class="section-chevron">›</span>
+    </div>
+    
+    <!-- Edit Profile (только для залогиненных) -->
+    <div class="setting-item" id="settings-edit-profile" style="display: none;">
+        <div class="setting-info">
+            <span class="setting-label" data-i18n="editProfile">Edit Profile</span>
+            <span class="setting-desc" data-i18n="editProfileDesc">Change your name, email, or password</span>
+        </div>
+        <span class="section-chevron">›</span>
+    </div>
+    
+    <!-- Account Status -->
+    <div class="setting-item setting-item-static">
+        <div class="setting-info">
+            <span class="setting-label" data-i18n="accountStatus">Account Status</span>
+            <span class="setting-desc" id="profile-account-status">Local Storage Mode</span>
+        </div>
+        <span class="status-badge" id="profile-status-badge">Guest</span>
+    </div>
+    
+    <!-- Member Since (только для залогиненных) -->
+    <div class="setting-item setting-item-static" id="profile-member-since" style="display: none;">
+        <div class="setting-info">
+            <span class="setting-label" data-i18n="memberSince">Member Since</span>
+            <span class="setting-desc" id="profile-member-date">—</span>
+        </div>
+    </div>
+</div>
+
+                <!-- ============================================ -->
+                <!-- APPEARANCE SECTION                           -->
+                <!-- ============================================ -->
+                <div class="settings-section-content" id="section-appearance">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="language">Language</span>
+                            <span class="setting-desc" data-i18n="languageDesc">Interface language</span>
+                        </div>
+                        <select id="lang-select" class="select-input select-small">
+                            <option value="en">English</option>
+                            <option value="ru">Русский</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="theme">Theme</span>
+                            <span class="setting-desc" data-i18n="themeDesc">Choose your preferred look</span>
+                        </div>
                         <select id="theme-select" class="select-input select-small">
-                            <option value="auto">Auto (System)</option>
+                            <option value="auto">Auto</option>
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
+                            <option value="evergreen">Evergreen</option>
+                            <option value="blossom">Blossom</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="sunset">Sunset</option>
                             <option value="pink">Pink</option>
                             <option value="moon">Moon</option>
                         </select>
-
-                
                     </div>
-
+                    
                     <div class="setting-item">
-    <div class="setting-info">
-        <span class="setting-label" data-i18n="holidayRegion">Holiday Region</span>
-        <span class="setting-desc" data-i18n="holidayRegionDesc">Show public holidays for your country</span>
-    </div>
-    <select id="holiday-select" class="select-input select-small">
-        <option value="us">🇺🇸 United States</option>
-        <option value="ru">🇷🇺 Russia</option>
-        <option value="de">🇩🇪 Germany</option>
-        <option value="gb">🇬🇧 United Kingdom</option>
-        <option value="fr">🇫🇷 France</option>
-    </select>
-</div>
-
-<div class="setting-item">
-    <div class="setting-info">
-        <span class="setting-label" data-i18n="timeFormat">Time Format</span>
-        <span class="setting-desc" data-i18n="timeFormatDesc">12h or 24h clock</span>
-    </div>
-    <select id="time-format-select" class="select-input select-small">
-        <option value="auto">Auto (System)</option>
-        <option value="12h">12h (AM/PM)</option>
-        <option value="24h">24h</option>
-    </select>
-</div>
-
-<div class="setting-item">
-    <div class="setting-info">
-        <span class="setting-label" data-i18n="timezone">Timezone</span>
-        <span class="setting-desc" data-i18n="timezoneDesc">Fix calendar & habit timestamps</span>
-    </div>
-    <select id="tz-select" class="select-input select-small">
-        <option value="auto">Auto (System)</option>
-        <option value="UTC">UTC / GMT</option>
-        <option value="Europe/Moscow">Moscow (UTC+3)</option>
-        <option value="Europe/London">London (UTC+0)</option>
-        <option value="Europe/Berlin">Berlin (UTC+1/2)</option>
-        <option value="America/New_York">New York (UTC-5/4)</option>
-        <option value="America/Los_Angeles">Los Angeles (UTC-8/7)</option>
-        <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
-        <option value="Asia/Shanghai">Beijing (UTC+8)</option>
-    </select>
-</div>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="showTrophy">Show Trophy Garden</span><span class="setting-desc" data-i18n="showTrophyDesc">Display completed trees (365+ days)</span></div><label class="toggle-switch"><input type="checkbox" id="toggle-trophies"><span class="toggle-slider"></span></label></div>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="focusMode">Focus Mode</span><span class="setting-desc" data-i18n="focusModeDesc">Minimal UI for distraction-free tracking</span></div><label class="toggle-switch"><input type="checkbox" id="toggle-focus"><span class="toggle-slider"></span></label></div>
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="background">Background</span>
+                            <span class="setting-desc" data-i18n="backgroundDesc">Add atmosphere to your garden</span>
+                        </div>
+                        <select id="bg-select" class="select-input select-small">
+                            <option value="none">None</option>
+                            <option value="aurora">Aurora Garden</option>
+                            <option value="rainfall">Rainfall</option>
+                            <option value="starlight">Starlight</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="settings-group">
-                    <h3 class="settings-group-title" data-i18n="data">Data</h3>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="export">Export</span><span class="setting-desc" data-i18n="exportDesc">Download backup as JSON</span></div><button class="btn-small" id="settings-export" data-i18n="exportBtn">Export</button></div>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="import">Import</span><span class="setting-desc" data-i18n="importDesc">Restore from file</span></div><button class="btn-small" id="settings-import" data-i18n="importBtn">Import</button></div>
-                    <div class="setting-item"><div class="setting-info"><span class="setting-label" data-i18n="reset">Reset</span><span class="setting-desc" style="color:var(--accent-red)" data-i18n="resetDesc">Delete all data</span></div><button class="btn-small btn-danger" id="settings-reset" data-i18n="resetBtn">Reset</button></div>
+                
+                <!-- ============================================ -->
+                <!-- GARDEN SECTION                               -->
+                <!-- ============================================ -->
+                <div class="settings-section-content" id="section-garden">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="showTrophy">Show Trophy Garden</span>
+                            <span class="setting-desc" data-i18n="showTrophyDesc">Display completed trees (365+ days)</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-trophies">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="focusMode">Focus Mode</span>
+                            <span class="setting-desc" data-i18n="focusModeDesc">Minimal UI for distraction-free tracking</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-focus">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
-                <button class="btn-primary" id="close-settings" style="margin-top: 24px;" data-i18n="done">Done</button>
+                
+                <!-- ============================================ -->
+                <!-- CALENDAR SECTION                             -->
+                <!-- ============================================ -->
+                <div class="settings-section-content" id="section-calendar">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="timezone">Timezone</span>
+                            <span class="setting-desc" data-i18n="timezoneDesc">Fix calendar & habit timestamps</span>
+                        </div>
+                        <select id="tz-select" class="select-input select-small">
+                            <option value="auto">Auto (System)</option>
+                            <option value="UTC">UTC / GMT</option>
+                            <option value="Europe/Moscow">Moscow (UTC+3)</option>
+                            <option value="Europe/London">London (UTC+0)</option>
+                            <option value="Europe/Berlin">Berlin (UTC+1/2)</option>
+                            <option value="America/New_York">New York (UTC-5/4)</option>
+                            <option value="America/Los_Angeles">Los Angeles (UTC-8/7)</option>
+                            <option value="Asia/Tokyo">Tokyo (UTC+9)</option>
+                            <option value="Asia/Shanghai">Beijing (UTC+8)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="holidayRegion">Holiday Region</span>
+                            <span class="setting-desc" data-i18n="holidayRegionDesc">Show public holidays for your country</span>
+                        </div>
+                        <select id="holiday-select" class="select-input select-small">
+                            <option value="us">🇺🇸 United States</option>
+                            <option value="ru">🇷🇺 Russia</option>
+                            <option value="de">🇩🇪 Germany</option>
+                            <option value="gb">🇬🇧 United Kingdom</option>
+                            <option value="fr">🇫🇷 France</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="timeFormat">Time Format</span>
+                            <span class="setting-desc" data-i18n="timeFormatDesc">12h or 24h clock</span>
+                        </div>
+                        <select id="time-format-select" class="select-input select-small">
+                            <option value="auto">Auto (System)</option>
+                            <option value="12h">12h (AM/PM)</option>
+                            <option value="24h">24h</option>
+                        </select>
+                    </div>
+                    
+                    <div class="settings-footer-inline">
+                        <span class="cultiva-date-label">Cultiva sees</span>
+                        <span id="cultiva-date-preview" class="cultiva-date-value">Loading...</span>
+                    </div>
+                </div>
+                
+                <!-- ============================================ -->
+                <!-- DATA SECTION                                 -->
+                <!-- ============================================ -->
+                <div class="settings-section-content" id="section-data">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="export">Export</span>
+                            <span class="setting-desc" data-i18n="exportDesc">Download backup as JSON</span>
+                        </div>
+                        <button class="btn-small" id="settings-export" data-i18n="exportBtn">Export</button>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="import">Import</span>
+                            <span class="setting-desc" data-i18n="importDesc">Restore from file</span>
+                        </div>
+                        <button class="btn-small" id="settings-import" data-i18n="importBtn">Import</button>
+                    </div>
+                    
+                    <div class="setting-item setting-item-danger">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="reset">Reset</span>
+                            <span class="setting-desc" data-i18n="resetDesc">Delete all data</span>
+                        </div>
+                        <button class="btn-small btn-danger" id="settings-reset" data-i18n="resetBtn">Reset</button>
+                    </div>
+                </div>
+                
+                <!-- ============================================ -->
+                <!-- ABOUT SECTION                                -->
+                <!-- ============================================ -->
+                <div class="settings-section-content" id="section-about">
+                    <div class="about-app-icon">🌱</div>
+                    <div class="about-app-name">Cultiva</div>
+                    <div class="about-app-version">Version [0.3.0] Sequoia</div>
+                    
+                    <div class="settings-divider"></div>
+                    
+                    <a href="/pages/tips.html" class="setting-item setting-item-link">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="footerTips">Tips</span>
+                            <span class="setting-desc" data-i18n="tipsDesc">Get the most out of Cultiva</span>
+                        </div>
+                        <span class="section-chevron">›</span>
+                    </a>
+                    
+                    <a href="/pages/privacy.html" class="setting-item setting-item-link">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="footerPrivacy">Privacy</span>
+                            <span class="setting-desc" data-i18n="privacyDesc">How we handle your data</span>
+                        </div>
+                        <span class="section-chevron">›</span>
+                    </a>
+                    
+                    <a href="/pages/changelog.html" class="setting-item setting-item-link">
+                        <div class="setting-info">
+                            <span class="setting-label" data-i18n="footerChangelog">What's New</span>
+                            <span class="setting-desc" data-i18n="changelogDesc">See latest updates</span>
+                        </div>
+                        <span class="section-chevron">›</span>
+                    </a>
+                    
+                    <a href="https://github.com/krwg/cultiva" target="_blank" class="setting-item setting-item-link">
+                        <div class="setting-info">
+                            <span class="setting-label">GitHub</span>
+                            <span class="setting-desc">krwg/cultiva</span>
+                        </div>
+                        <span class="section-chevron">›</span>
+                    </a>
+                </div>
+                
             </div>
         </div>
     </div>
+</div>
 
+    
+    <!-- ============================================ -->
+    <!-- MODAL: AVATAR                                -->
+    <!-- ============================================ -->
     <div class="modal" id="avatar-modal">
         <div class="modal-overlay"></div>
         <div class="modal-sheet" style="max-width: 520px;">
@@ -256,6 +546,9 @@
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- MODAL: AUTH                                  -->
+    <!-- ============================================ -->
     <div class="modal" id="auth-modal">
         <div class="modal-overlay"></div>
         <div class="modal-sheet" style="max-width: 420px;">
@@ -271,22 +564,10 @@
                     <button type="submit" class="btn-primary">Continue</button>
                 </form>
                 <form id="register-form" class="auth-form">
-                    <div class="form-group">
-                        <label for="reg-name">Display Name</label>
-                        <input type="text" id="reg-name" placeholder="Your name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="reg-email">Email</label>
-                        <input type="email" id="reg-email" required placeholder="you@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="reg-password">Password</label>
-                        <input type="password" id="reg-password" required placeholder="Min 6 characters" minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="reg-dob">Date of Birth (Optional)</label>
-                        <input type="date" id="reg-dob">
-                    </div>
+                    <div class="form-group"><label for="reg-name">Display Name</label><input type="text" id="reg-name" placeholder="Your name" required></div>
+                    <div class="form-group"><label for="reg-email">Email</label><input type="email" id="reg-email" required placeholder="you@example.com"></div>
+                    <div class="form-group"><label for="reg-password">Password</label><input type="password" id="reg-password" required placeholder="Min 6 characters" minlength="6"></div>
+                    <div class="form-group"><label for="reg-dob">Date of Birth (Optional)</label><input type="date" id="reg-dob"></div>
                     <button type="submit" class="btn-primary">Create Account</button>
                 </form>
                 <p id="auth-error" class="auth-error" style="display:none; color: var(--accent-red); font-size: 13px; text-align: center; margin-top: 12px;"></p>
@@ -294,20 +575,99 @@
         </div>
     </div>
 
+<!-- ============================================ -->
+<!-- MODAL: EDIT PROFILE                          -->
+<!-- ============================================ -->
+<div class="modal" id="edit-profile-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-sheet" style="max-width: 460px;">
+        <div class="modal-header">
+            <h2 data-i18n="editProfile">Edit Profile</h2>
+            <button class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-profile-form">
+                <!-- Display Name -->
+                <div class="form-group">
+                    <label for="edit-display-name" data-i18n="displayName">Display Name</label>
+                    <input type="text" id="edit-display-name" class="event-input" placeholder="Your name" autocomplete="off">
+                </div>
+                
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="edit-email" data-i18n="email">Email</label>
+                    <input type="email" id="edit-email" class="event-input" placeholder="you@example.com" autocomplete="off">
+                </div>
+                
+                <!-- Date of Birth -->
+                <div class="form-group">
+                    <label for="edit-dob" data-i18n="dateOfBirth">Date of Birth</label>
+                    <input type="date" id="edit-dob" class="event-input">
+                </div>
+                
+                <div class="settings-divider"></div>
+                
+                <!-- Change Password (опционально) -->
+                <div class="form-group">
+                    <label for="edit-new-password" data-i18n="newPassword">New Password (optional)</label>
+                    <input type="password" id="edit-new-password" class="event-input" placeholder="••••••••" autocomplete="new-password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-confirm-password" data-i18n="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="edit-confirm-password" class="event-input" placeholder="••••••••" autocomplete="new-password">
+                </div>
+                
+                <p id="edit-profile-error" class="auth-error" style="display: none;"></p>
+                
+                <div class="event-actions" style="margin-top: 24px;">
+                    <button type="button" class="event-btn event-btn-secondary" id="edit-profile-cancel" data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="event-btn event-btn-primary" data-i18n="saveChanges">Save Changes</button>
+                </div>
+            </form>
+            
+            <div class="settings-divider" style="margin: 24px 0 16px;"></div>
+            
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+                <p class="danger-zone-title" data-i18n="dangerZone">Danger Zone</p>
+                <button class="btn-danger-outline" id="sign-out-from-profile" data-i18n="signOut">Sign Out</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                       -->
+    <!-- ============================================ -->
     <footer class="app-footer">
         <div class="footer-content">
             <nav class="footer-links">
-                <a href="/src/index.html" data-i18n="footerHome">Home</a>
+                <a href="/index.html" data-i18n="footerHome">Home</a>
                 <a href="/landing.html" data-i18n="footerAbout">About</a>
                 <a href="/pages/changelog.html" class="footer-link" data-i18n="footerChangelog">What's New</a>
                 <a href="/pages/tips.html" class="footer-link" data-i18n="footerTips">Tips</a>
-                <a href="/pages/privacy.html">Privacy</a>
+                <a href="/pages/privacy.html" data-i18n="privacy" >Privacy</a>
+                <a href="https://krwg.github.io/Cultiva/"data-i18n="dev">Dev</a>                
                 <a href="https://github.com/krwg/cultiva" target="_blank" rel="noopener">GitHub</a>
             </nav>
-            <div class="footer-brand"><span class="footer-version">[0.2.2] Aspen</span></div>
+            <div class="footer-brand"><span class="footer-version">[0.3.0] Sequoia</span></div>
         </div>
     </footer>
 
-    <script type="module" src="./main.js"></script>
+    <!-- ============================================ -->
+    <!-- SCRIPTS                                      -->
+    <!-- ============================================ -->
+    <script type="module" src="main.js"></script>
+
+    <!-- ============================================ -->
+<!-- ANIMATED BACKGROUNDS                          -->
+<!-- ============================================ -->
+<div class="bg-aurora" id="bg-aurora" style="display: none;"></div>
+<div class="bg-rainfall" id="bg-rainfall" style="display: none;"></div>
+<div class="bg-starlight" id="bg-starlight" style="display: none;"></div>
 </body>
 </html>

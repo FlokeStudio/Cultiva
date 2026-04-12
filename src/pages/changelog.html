@@ -3,403 +3,1051 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What's New | Cultiva</title>
+    <meta name="description" content="Cultiva Release Notes — Track the evolution of your favorite habit garden.">
+    <title>Cultiva | What's New</title>
     <link rel="stylesheet" href="../styles/main.css">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
     <style>
-        .changelog-page { 
-            background: var(--bg-secondary); 
-            min-height: 100vh; 
-            font-family: var(--font-main); 
-            -webkit-font-smoothing: antialiased;
-            transition: background var(--duration-normal) var(--ease-apple);
-        }
-        .cl-header { 
-            position: sticky; top: 0; z-index: 100; 
-            background: rgba(255, 255, 255, 0.8); 
-            backdrop-filter: saturate(180%) blur(20px); 
-            -webkit-backdrop-filter: saturate(180%) blur(20px); 
-            border-bottom: 1px solid var(--border-light); 
-            transition: background var(--duration-normal);
-        }
-        body.theme-dark .cl-header { background: rgba(0, 0, 0, 0.8); }
-        .cl-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        .cl-nav { display: flex; align-items: center; justify-content: space-between; height: 52px; }
-        .cl-back { 
-            text-decoration: none; color: var(--accent-blue); font-size: 14px; font-weight: 500; 
-            display: flex; align-items: center; gap: 4px; transition: opacity var(--duration-fast) var(--ease-apple);
-        }
-        .cl-back:hover { opacity: 0.7; }
-        .header-controls { display: flex; align-items: center; gap: 12px; }
-        .btn-control {
-            width: 36px; height: 36px; border-radius: 50%; background: transparent;
-            border: none; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; font-size: 16px; color: var(--text-secondary);
-            transition: all var(--duration-fast) var(--ease-apple);
-            filter: grayscale(100%) brightness(0.65);
-        }
-        .btn-control:hover { background: var(--bg-tertiary); color: var(--text-primary); filter: grayscale(100%) brightness(0.85); }
-        .btn-archive {
-            background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-light);
-            border-radius: 99px; padding: 6px 14px; font-size: 13px; font-weight: 500; cursor: pointer;
-            transition: all var(--duration-fast) var(--ease-apple); display: flex; align-items: center; gap: 4px;
-        }
-        .btn-archive:hover { background: var(--border-light); color: var(--text-primary); }
-        .lang-dropdown { position: relative; }
-        .lang-dropdown-content {
-            display: none; position: absolute; top: calc(100% + 8px); right: 0;
-            background: var(--bg-primary); border: 1px solid var(--border-light);
-            border-radius: 12px; box-shadow: var(--shadow-lg); min-width: 120px;
-            overflow: hidden; z-index: 1000; animation: dropdownFade 0.2s var(--ease-apple);
-        }
-        .lang-dropdown.active .lang-dropdown-content { display: block; }
-        @keyframes dropdownFade { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-        .lang-option {
-            display: block; width: 100%; padding: 10px 16px; background: none; border: none;
-            text-align: left; font-size: 14px; color: var(--text-primary); cursor: pointer;
-            transition: background var(--duration-fast) var(--ease-apple);
-        }
-        .lang-option:hover { background: var(--bg-tertiary); }
-        .lang-option.active { background: var(--bg-secondary); font-weight: 600; }
-        .cl-hero { text-align: center; padding: 80px 20px 40px; }
-        .cl-badge { 
-            display: inline-flex; padding: 6px 14px; background: var(--bg-tertiary); 
-            border: 1px solid var(--border-light); border-radius: 99px; font-size: 13px; 
-            font-weight: 500; color: var(--text-secondary); margin-bottom: 16px; 
-        }
-        .cl-title { 
-            font-size: clamp(36px, 6vw, 56px); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 12px; 
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink), var(--accent-blue));
-            background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-            background-clip: text; animation: gradient-shift 8s ease infinite;
-        }
-        @keyframes gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        .cl-subtitle { font-size: 18px; color: var(--text-secondary); max-width: 500px; margin: 0 auto; line-height: 1.5; }
-        .cl-timeline { padding: 40px 0 100px; }
-        .cl-timeline-content { max-width: 800px; margin: 0 auto; }
-        .feature-list a { color: var(--accent-blue); text-decoration: none; transition: opacity var(--duration-fast) var(--ease-apple); }
-        .feature-list a:hover { opacity: 0.7; text-decoration: underline; }
-        .version-card { 
-            background: var(--bg-primary); border: 1px solid var(--border-light); border-radius: 20px; 
-            padding: 32px; margin-bottom: 32px; box-shadow: var(--shadow-sm); 
-            transition: all 0.4s var(--ease-apple); opacity: 0; transform: translateY(24px); 
-        }
-        .version-card.visible { opacity: 1; transform: translateY(0); }
-        .version-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-        .version-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-        .version-tag { font-size: 24px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
-        .version-badge { padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-live { background: rgba(52, 199, 89, 0.15); color: #34c759; }
-        .badge-soon { background: rgba(0, 113, 227, 0.15); color: var(--accent-blue); }
-        .badge-archived { background: rgba(142, 142, 147, 0.15); color: #8e8e93; }
-        .version-desc { font-size: 15px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; }
-        .feature-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
-        .feature-item { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-primary); line-height: 1.4; }
-        .feature-icon { color: var(--accent-green); font-weight: 700; flex-shrink: 0; margin-top: 2px; font-size: 14px; }
-        .upcoming-card { border-style: dashed; opacity: 0.85; background: var(--bg-secondary); }
-        .archive-section { display: none; margin-top: 24px; padding-top: 24px; border-top: 1px dashed var(--border-light); }
-        .archive-section.active { display: block; animation: fadeSlide 0.3s var(--ease-apple); }
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ============================================ */
+        /* CULTIVA CHANGELOG          */
+        /* ============================================ */
         
-        .app-footer {
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-light);
-            padding: 32px 24px;
-            margin-top: auto;
-            transition: background var(--duration-normal) var(--ease-apple);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .footer-content {
-            max-width: 1200px;
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.47059;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* ============================================ */
+        /* NAVIGATION · GLASS                           */
+        /* ============================================ */
+        
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 12px 24px;
+            background: rgba(var(--bg-primary-rgb, 255, 255, 255), 0.72);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body.theme-dark .nav-bar {
+            background: rgba(0, 0, 0, 0.72);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        
+        .nav-container {
+            max-width: 1280px;
             margin: 0 auto;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 16px;
-            text-align: center;
+            justify-content: space-between;
         }
-        .footer-links {
+        
+        .nav-logo {
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            text-decoration: none;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
             align-items: center;
-            gap: 12px 24px;
+            gap: 8px;
         }
-        .footer-links a, .footer-link {
-            font-size: 13px;
+        
+        .nav-logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+        }
+        
+        .nav-link {
+            font-size: 14px;
+            font-weight: 500;
             color: var(--text-secondary);
             text-decoration: none;
-            transition: color var(--duration-fast) var(--ease-apple);
-            padding: 6px 10px;
-            border-radius: var(--radius-sm);
+            transition: color 0.2s ease;
         }
-        .footer-links a:hover, .footer-link:hover {
+        
+        .nav-link:hover {
             color: var(--text-primary);
+        }
+        
+        .nav-link.active {
+            color: var(--accent-blue);
+        }
+        
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .btn-ghost {
+            padding: 8px 16px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .btn-ghost:hover {
             background: var(--bg-tertiary);
         }
-        .footer-brand { margin-top: 8px; }
-        .footer-version {
-            font-size: 11px;
+        
+        .btn-primary {
+            padding: 8px 18px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            background: var(--accent-blue);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-blue-hover);
+            transform: scale(1.02);
+        }
+        
+        .lang-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        
+        .lang-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .lang-dropdown {
+            position: relative;
+        }
+        
+        .lang-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            min-width: 120px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .lang-dropdown.active .lang-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            text-align: left;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        
+        .lang-option:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .lang-option.active {
+            background: var(--bg-secondary);
+            font-weight: 500;
+        }
+        
+        /* ============================================ */
+        /* HERO                                         */
+        /* ============================================ */
+        
+        .hero {
+            padding: 140px 24px 48px;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+        
+        .hero-container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .hero-title {
+            font-size: clamp(40px, 6vw, 64px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        
+        .hero-title-gradient {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink), var(--accent-orange), var(--accent-blue));
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .hero-subtitle {
+            font-size: 19px;
+            color: var(--text-secondary);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        /* ============================================ */
+        /* RELEASES                                     */
+        /* ============================================ */
+        
+        .releases-section {
+            padding: 24px 24px 80px;
+            max-width: 880px;
+            margin: 0 auto;
+        }
+        
+        .release-card {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 36px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .release-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 32px -12px rgba(0, 0, 0, 0.12);
+            border-color: var(--border-medium);
+        }
+        
+        .release-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .release-version {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+        
+        .release-codename {
+            font-size: 28px;
+            font-weight: 400;
             color: var(--text-tertiary);
-            font-family: var(--font-mono);
+        }
+        
+        .release-badge {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 980px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
-        @media (max-width: 768px) { 
-            .version-card { padding: 24px; } 
-            .cl-hero { padding: 60px 20px 30px; } 
-            .cl-title { font-size: 32px; }
-            .header-controls { gap: 4px; }
-            .btn-control { width: 28px; height: 28px; font-size: 14px; }
-            .app-footer { padding: 24px 16px; }
-            .footer-content { gap: 12px; }
-            .footer-links { gap: 10px 16px; }
-            .footer-version { font-size: 10px; }
+        
+        .badge-latest {
+            background: var(--accent-blue);
+            color: white;
         }
+        
+        .badge-stable {
+            background: var(--accent-green);
+            color: white;
+        }
+        
+        .badge-archived {
+            background: var(--bg-tertiary);
+            color: var(--text-tertiary);
+        }
+        
+        .badge-desktop {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            color: white;
+        }
+        
+        .release-date {
+            font-size: 15px;
+            color: var(--text-tertiary);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .release-desc {
+            font-size: 18px;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .feature-icon {
+            color: var(--accent-green);
+            font-weight: 600;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+        
+        .feature-highlight {
+            background: linear-gradient(135deg, rgba(0, 113, 227, 0.08), rgba(175, 82, 222, 0.08));
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(0, 113, 227, 0.12);
+        }
+        
+        .feature-highlight-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-highlight-text {
+            font-size: 16px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        /* ============================================ */
+        /* DESKTOP RELEASE CARD                         */
+        /* ============================================ */
+        
+        .desktop-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .desktop-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .desktop-link-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .desktop-link-primary:hover {
+            background: var(--accent-blue-hover);
+        }
+        
+        .desktop-link-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+        
+        .desktop-link-secondary:hover {
+            background: var(--bg-quaternary);
+        }
+        
+        /* ============================================ */
+        /* ARCHIVE                                      */
+        /* ============================================ */
+        
+        .archive-section {
+            margin-top: 24px;
+        }
+        
+        .archive-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .archive-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .archive-content {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .archive-content.active {
+            display: block;
+            animation: fadeSlide 0.3s ease;
+        }
+        
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ============================================ */
+        /* FOOTER                                       */
+        /* ============================================ */
+        
+        .footer {
+            padding: 40px 24px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-primary);
+        }
+        
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-copyright {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 36px;
+        }
+        
+        .footer-links a {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .footer-version {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+        
+        /* ============================================ */
+        /* RESPONSIVE                                   */
+        /* ============================================ */
+        
+        @media (max-width: 968px) {
+            .nav-links {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 120px 20px 40px;
+            }
+            
+            .release-card {
+                padding: 28px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .release-version,
+            .release-codename {
+                font-size: 24px;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .desktop-links {
+                flex-direction: column;
+            }
+            
+            .desktop-link {
+                justify-content: center;
+            }
+        }
+        
         @media (max-width: 480px) {
-            .footer-links { flex-direction: column; gap: 8px; }
+            .release-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .release-badge {
+                margin-left: 0;
+                align-self: flex-start;
+            }
         }
     </style>
 </head>
-<body class="changelog-page">
-    <div class="loading-screen" id="loading-screen">
-        <div class="loading-cloud">
-            <div class="cloud-body"></div>
-            <div class="cloud-data"></div>
-        </div>
-        <p class="loading-text">Syncing your garden...</p>
-    </div>
-
-    <header class="cl-header">
-        <div class="cl-container cl-nav">
-            <a href="/" class="cl-back" data-i18n="backBtn">← Back to Garden</a>
-            <span style="font-weight: 600; font-size: 15px; color: var(--text-primary);">Cultiva</span>
-            <div class="header-controls">
-                <button class="btn-archive" id="archive-toggle">Archive ▼</button>
+<body>
+    <!-- ============================================ -->
+    <!-- NAVIGATION                                   -->
+    <!-- ============================================ -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <span>Cultiva</span>
+            </a>
+            <div class="nav-links">
+                <a href="/index.html" class="nav-link" data-i18n="navgarden">Back to Garden</a>                
+                <a href="/landing.html#features" class="nav-link" data-i18n="navFeatures">Features</a>
+                <a href="/landing.html#desktop" class="nav-link" data-i18n="navDesktop">Desktop</a>
+                <a href="/pages/tips.html" class="nav-link" data-i18n="navTips">Tips</a>
+                <a href="/pages/changelog.html" class="nav-link" data-i18n="navChangelog">What's New</a>
+            </div>
+            <div class="nav-actions">
                 <div class="lang-dropdown" id="lang-dropdown">
-                    <button class="btn-control" id="lang-btn" aria-label="Select language">🌐</button>
-                    <div class="lang-dropdown-content">
+                    <button class="lang-btn" id="lang-btn">EN</button>
+                    <div class="lang-menu">
                         <button class="lang-option active" data-lang="en">English</button>
                         <button class="lang-option" data-lang="ru">Русский</button>
                     </div>
                 </div>
-                <button class="btn-control" id="theme-toggle" aria-label="Toggle theme">☀️</button>
+                <button class="btn-ghost" id="theme-toggle">Dark</button>
+                <a href="/" class="btn-primary" data-i18n="openApp">Open App</a>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <main>
-        <section class="cl-hero">
-            <h1 class="cl-title" data-i18n="pageTitle">What's New</h1>
-            <p class="cl-subtitle" data-i18n="pageDesc">Grow your habits, grow yourself. See what's planted in this release and what's blooming next.</p>
-        </section>
-
-        <div class="cl-container cl-timeline">
-            <div class="cl-timeline-content">
-                <article class="version-card">
-                    <div class="version-header">
-                        <span class="version-tag">0.2.0 <span data-i18n="v02name">"Aspen"</span></span>
-                        <span class="version-badge badge-live" data-i18n="badgeLive">Live</span>
-                    </div>
-                    <p class="version-desc" data-i18n="v02desc">The most significant update yet. Accounts, user-scoped data experience.</p>
-                    <ul class="feature-list">
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_1">Secure Account System with salted SHA-256 password hashing</span></li>
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_2">User profiles: name, email, avatar, date of birth</span></li>
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_3">IndexedDB (IBD2) storage with user-scoped data isolation</span></li>
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_4">Session recovery on page refresh (F5)</span></li>
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_5">Avatar persistence: bound to user profile, not global settings</span></li>
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_6">GrowthKit engine: streak tracking, gamified progress, trophy garden</span></li>
-                        <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2_12">Changelog archive toggle for legacy versions</span></li>
-                    </ul>
-                </article>
-
-                <div class="archive-section" id="archive-section">
-                    <h3 style="font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 20px;" data-i18n="archiveTitle">Previous Releases</h3>
-                    
-                    <article class="version-card upcoming-card">
-                        <div class="version-header">
-                            <span class="version-tag">0.1.5 <span data-i18n="v015name">"Maple"</span></span>
-                            <span class="version-badge badge-archived" data-i18n="badgeArchived">Archived</span>
-                        </div>
-                        <p class="version-desc" data-i18n="v015desc">Developer-focused update: documentation, GitHub Pages, and project infrastructure.</p>
-                        <ul class="feature-list">
-                            <li class="feature-item"><span><a href="https://github.com/krwg/cultiva/wiki" target="_blank" rel="noopener">GitHub Wiki</a> — User Guide & Architecture Docs</span></li>
-                            <li class="feature-item"><span><a href="https://krwg.github.io/cultiva/" target="_blank" rel="noopener">Developer Promo Page</a> (GitHub Pages)</span></li>
-                            <li class="feature-item"><span><a href="https://github.com/krwg/cultiva/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a> & <a href="https://github.com/krwg/cultiva/wiki/Contributing" target="_blank" rel="noopener">Contributing Guidelines</a></span></li>
-                            <li class="feature-item"><span><a href="https://github.com/krwg/cultiva/issues" target="_blank" rel="noopener">Issue Tracker</a> & <a href="https://github.com/krwg/cultiva/discussions" target="_blank" rel="noopener">Discussions</a></span></li>
-                        </ul>
-                    </article>
-
-                    <article class="version-card upcoming-card">
-                        <div class="version-header">
-                            <span class="version-tag">0.1.0 <span data-i18n="v01name">"Maple"</span></span>
-                            <span class="version-badge badge-archived" data-i18n="badgeArchived">Archived</span>
-                        </div>
-                        <p class="version-desc" data-i18n="v01desc">The foundation is set. Plant your first seeds, watch them grow, and track your progress in a beautiful, distraction-free garden.</p>
-                        <ul class="feature-list">
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat1">Gamified Growth System (5 stages from Seed to Legacy Tree)</span></li>
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat2">Trophy Garden for habits reaching 365+ days</span></li>
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat3">Focus Mode for minimalist, distraction-free tracking</span></li>
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat4">Custom Avatars (12 gradients × 24 icons)</span></li>
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat5">Full EN/RU Localization & Dark/Light Themes</span></li>
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat6">GitHub-style Activity Calendar & Stats</span></li>
-                            <li class="feature-item"><span class="feature-icon">✓</span> <span data-i18n="feat7">JSON Export/Import & Local Storage Backup</span></li>
-                        </ul>
-                    </article>
-                </div>
-            </div>
+    <!-- ============================================ -->
+    <!-- HERO                                         -->
+    <!-- ============================================ -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1 class="hero-title">
+                <span class="hero-title-gradient" data-i18n="heroTitle">What's New</span>
+            </h1>
+            <p class="hero-subtitle" data-i18n="heroDesc">
+                Track the evolution of Cultiva. New features, improvements, and fixes — 
+                shipped regularly.
+            </p>
         </div>
-    </main>
+    </section>
 
-    <footer class="app-footer">
-        <div class="footer-content">
-            <nav class="footer-links">
-                <a href="/src/index.html" data-i18n="footerHome">Home</a>
-                <a href="/landing.html" data-i18n="footerAbout">About</a>
-                <a href="/pages/changelog.html" class="footer-link" data-i18n="footerChangelog">What's New</a>
-                <a href="/pages/privacy.html">Privacy</a>                
-                <a href="https://github.com/krwg/cultiva" target="_blank" rel="noopener">GitHub</a>
-            </nav>
+    <!-- ============================================ -->
+    <!-- RELEASES                                     -->
+    <!-- ============================================ -->
+    <section class="releases-section">
+        
+        <!-- 0.3.0 SEQUOIA -->
+        <article class="release-card">
+            <div class="release-header">
+                <span class="release-version">[0.3.0]</span>
+                <span class="release-codename" data-i18n="v030codename">Sequoia</span>
+                <span class="release-badge badge-latest" data-i18n="badgeLatest">Latest</span>
+            </div>
+            <div class="release-date" data-i18n="v030date">April 12, 2026</div>
+            <p class="release-desc" data-i18n="v030desc">A completely redesigned Calendar experience — plus desktop app improvements.</p>
             
-            <div class="footer-brand">
-                <span class="footer-version" id="footer-version">[0.2.0] Aspen 2026</span>
+            <div class="feature-highlight">
+                <div class="feature-highlight-title" data-i18n="highlightTitle">Major Feature</div>
+                <div class="feature-highlight-text" data-i18n="v030highlight">All-new Calendar with Month, Week, and Day views. Create events with precise timing, custom colors, and rich notes. Completed habits automatically appear.</div>
             </div>
+            
+            <div class="feature-grid">
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat1">Calendar with 3 powerful views</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat2">12 event colors + rich notes and timing</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat3">Habit-Calendar integration (auto-sync)</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat4">Smart timezone handling across the app</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat5">Holiday region support (5 countries)</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat6">12h/24h time format selection</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat7">GrowthKit2</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v030feat8">Calendar code fully modularized</span></div>
+            </div>
+        </article>
+        
+        <!-- 0.2.1 ASPEN DESKTOP -->
+        <article class="release-card">
+            <div class="release-header">
+                <span class="release-version">[0.2.1]</span>
+                <span class="release-codename" data-i18n="v021codename">Aspen Desktop</span>
+                <span class="release-badge badge-desktop" data-i18n="badgeDesktop">Desktop</span>
+            </div>
+            <div class="release-date" data-i18n="v021date">April 8, 2026</div>
+            <p class="release-desc" data-i18n="v021desc">First native desktop release. Full Cultiva experience on Windows.</p>
+            
+            <div class="feature-highlight">
+                <div class="feature-highlight-title" data-i18n="desktopHighlightTitle">Native Windows App</div>
+                <div class="feature-highlight-text" data-i18n="v021highlight">Standalone .exe application — no browser required. Installer with Start Menu shortcuts or portable version for USB drives.</div>
+            </div>
+            
+            <div class="feature-grid">
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v021feat1">Native Windows 10/11 support</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v021feat2">Installer + portable distributions</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v021feat3">Zero telemetry · Local storage only</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v021feat4">Electron 30 · Vite 5 build system</span></div>
+            </div>
+            
+            <div class="desktop-links">
+                <a href="https://github.com/krwg/CultivaDesktop/releases/latest" target="_blank" class="desktop-link desktop-link-primary" data-i18n="downloadInstaller">↓ Download Installer (.exe)</a>
+                <a href="https://github.com/krwg/CultivaDesktop" target="_blank" class="desktop-link desktop-link-secondary" data-i18n="viewOnGitHub">View on GitHub →</a>
+            </div>
+        </article>
+        
+        <!-- 0.2.0 ASPEN -->
+        <article class="release-card">
+            <div class="release-header">
+                <span class="release-version">[0.2.0]</span>
+                <span class="release-codename" data-i18n="v020codename">Aspen</span>
+                <span class="release-badge badge-stable" data-i18n="badgeStable">Stable</span>
+            </div>
+            <div class="release-date" data-i18n="v020date">April 6, 2026</div>
+            <p class="release-desc" data-i18n="v020desc">Accounts, user-scoped data, and the GrowthKit engine.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v020feat1">Secure Account System (SHA-256)</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v020feat2">User profiles: name, email, avatar, DOB</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v020feat3">IndexedDB with user-scoped isolation</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v020feat4">Session recovery on refresh</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v020feat5">GrowthKit: streaks & gamified progress</span></div>
+                <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v020feat6">Avatar persistence per user profile</span></div>
+            </div>
+        </article>
+        
+        <!-- ARCHIVE -->
+        <div class="archive-section">
+            <button class="archive-toggle" id="archive-toggle">
+                <span data-i18n="viewArchive">View Previous Releases</span>
+                <span id="archive-arrow">↓</span>
+            </button>
+            
+            <div class="archive-content" id="archive-content">
+                
+                <!-- 0.1.5 Maple -->
+                <article class="release-card">
+                    <div class="release-header">
+                        <span class="release-version">[0.1.5]</span>
+                        <span class="release-codename" data-i18n="v015codename">Maple</span>
+                        <span class="release-badge badge-archived" data-i18n="badgeArchived">Archived</span>
+                    </div>
+                    <div class="release-date" data-i18n="v015date">April 5, 2026</div>
+                    <p class="release-desc" data-i18n="v015desc">Developer-focused update: documentation and infrastructure.</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v015feat1">GitHub Wiki — User Guide & Architecture</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v015feat2">Developer Promo Page (GitHub Pages)</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v015feat3">MIT License & Contributing Guidelines</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v015feat4">Issue Tracker & Discussions</span></div>
+                    </div>
+                </article>
+                
+                <!-- 0.1.0 Maple -->
+                <article class="release-card">
+                    <div class="release-header">
+                        <span class="release-version">[0.1.0]</span>
+                        <span class="release-codename" data-i18n="v010codename">Maple</span>
+                        <span class="release-badge badge-archived" data-i18n="badgeArchived">Archived</span>
+                    </div>
+                    <div class="release-date" data-i18n="v010date">April 4, 2026</div>
+                    <p class="release-desc" data-i18n="v010desc">The foundation is set. Plant your first seeds.</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat1">5-stage Gamified Growth System</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat2">Trophy Garden (365+ days)</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat3">Focus Mode</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat4">Custom Avatars (12×24)</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat5">EN/RU Localization</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat6">Dark/Light Themes</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat7">Activity Calendar & Stats</span></div>
+                        <div class="feature-item"><span class="feature-icon"></span> <span data-i18n="v010feat8">JSON Export/Import</span></div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                       -->
+    <!-- ============================================ -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-copyright" data-i18n="copyright">© 2026 Cultiva</div>
+            <div class="footer-links">
+                <a href="/" data-i18n="footerHome">Home</a>
+                <a href="/landing.html" data-i18n="footerAbout">About</a>
+                <a href="/pages/changelog.html" data-i18n="footerChangelog">What's New</a>
+                <a href="/pages/tips.html" data-i18n="footerTips">Tips</a>
+                <a href="/pages/privacy.html" data-i18n="footerPrivacy">Privacy</a>
+                <a href="https://github.com/krwg/cultiva" target="_blank">GitHub</a>
+            </div>
+            <div class="footer-version">0.3.0 Sequoia</div>
         </div>
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                setTimeout(() => {
-                    loadingScreen.classList.add('hidden');
-                    setTimeout(() => { loadingScreen.style.display = 'none'; }, 600);
-                }, 400);
-            }
-
+        (function() {
+            // ============================================ */
+            // TRANSLATIONS                                 */
+            // ============================================ */
+            
             const TRANSLATIONS = {
                 en: {
-                    backBtn: '← Back to Garden', archiveTitle: 'Previous Releases', pageTitle: "What's New",
-                    pageDesc: "Grow your habits, grow yourself. See what's planted in this release and what's blooming next.",
-                    v01name: 'Maple', badgeLive: 'Live', badgeArchived: 'Archived',
-                    v01desc: 'The foundation is set. Plant your first seeds, watch them grow, and track your progress in a beautiful, distraction-free garden.',
-                    feat1: 'Gamified Growth System (5 stages from Seed to Legacy Tree)', feat2: 'Trophy Garden for habits reaching 365+ days',
-                    feat3: 'Focus Mode for minimalist, distraction-free tracking', feat4: 'Custom Avatars (12 gradients × 24 icons)',
-                    feat5: 'Full EN/RU Localization & Dark/Light Themes', feat6: 'GitHub-style Activity Calendar & Stats',
-                    feat7: 'JSON Export/Import & Local Storage Backup',
-                    v02name: 'Aspen', v02desc: 'The most significant update yet. Accounts, user-scoped data experience.',
-                    feat2_1: 'Secure Account System with salted SHA-256 password hashing',
-                    feat2_2: 'User profiles: name, email, avatar, date of birth',
-                    feat2_3: 'IndexedDB (IBD2) storage with user-scoped data isolation',
-                    feat2_4: 'Session recovery on page refresh (F5)',
-                    feat2_5: 'Avatar persistence: bound to user profile, not global settings',
-                    feat2_6: 'GrowthKit engine: streak tracking, gamified progress, trophy garden',
-                    feat2_7: 'Apple-style UI: neutral guest mode, refined dropdowns, focus mode',
-                    feat2_8: 'Full EN/RU localization with dynamic language switching',
-                    feat2_9: 'Dark/Light themes with system preference detection',
-                    feat2_10: 'GitHub-style activity calendar & habit statistics',
-                    feat2_11: 'JSON export/import with local backup fallback',
-                    feat2_12: 'Changelog archive toggle for legacy versions',
-                    feat2_13: 'Branding system: CoreV2, GrowthKit, IBD2 nomenclature',
-                    v015name: '"Maple"', v015desc: 'Developer-focused update: documentation, GitHub Pages, and project infrastructure.',
-                    footerHome: 'Home', footerAbout: 'About', footerChangelog: "What's New"
+                    navFeatures: 'Features', navDesktop: 'Desktop', navTips: 'Tips', navChangelog: 'What\'s New', openApp: 'Open App',
+                    heroBadge: 'Release Notes', heroTitle: 'What\'s New', heroDesc: 'Track the evolution of Cultiva. New features, improvements, and fixes — shipped regularly.',
+                    badgeLatest: 'Latest', badgeStable: 'Stable', badgeArchived: 'Archived', badgeDesktop: 'Desktop',
+                    viewArchive: 'View Previous Releases',
+                    
+                    v030codename: 'Sequoia', v030date: 'April 12, 2026',
+                    v030desc: 'A completely redesigned Calendar experience — plus updating to GrowthKit2.',
+                    highlightTitle: 'Major Feature',
+                    v030highlight: 'All-new Calendar with Month, Week, and Day views. Create events with precise timing, custom colors, and rich notes. Completed habits automatically appear.',
+                    v030feat1: 'Calendar with 3 powerful views',
+                    v030feat2: '12 event colors + rich notes and timing',
+                    v030feat3: 'Habit-Calendar integration (auto-sync)',
+                    v030feat4: 'Smart timezone handling across the app',
+                    v030feat5: 'Holiday region support (5 countries)',
+                    v030feat6: '12h/24h time format selection',
+                    v030feat7: 'GrowthKit2',
+                    v030feat8: 'Calendar code fully modularized',
+                    
+                    v021codename: 'Aspen Desktop', v021date: 'April 8, 2026',
+                    v021desc: 'First native desktop release. Full Cultiva experience on Windows.',
+                    desktopHighlightTitle: 'Native Windows App',
+                    v021highlight: 'Standalone .exe application — no browser required. Installer with Start Menu shortcuts or portable version for USB drives.',
+                    v021feat1: 'Native Windows 10/11 support',
+                    v021feat2: 'Installer + portable distributions',
+                    v021feat3: 'Zero telemetry · Local storage only',
+                    v021feat4: 'Electron 30 · Vite 5 build system',
+                    downloadInstaller: '↓ Download Installer (.exe)',
+                    viewOnGitHub: 'View on GitHub →',
+                    
+                    v020codename: 'Aspen', v020date: 'April 6, 2026',
+                    v020desc: 'Accounts, user-scoped data, and the GrowthKit engine.',
+                    v020feat1: 'Secure Account System (SHA-256)',
+                    v020feat2: 'User profiles: name, email, avatar, DOB',
+                    v020feat3: 'IndexedDB with user-scoped isolation',
+                    v020feat4: 'Session recovery on refresh',
+                    v020feat5: 'GrowthKit: streaks & gamified progress',
+                    v020feat6: 'Avatar persistence per user profile',
+                    
+                    v015codename: 'Maple', v015date: 'April 5, 2026',
+                    v015desc: 'Developer-focused update: documentation and infrastructure.',
+                    v015feat1: 'GitHub Wiki — User Guide & Architecture',
+                    v015feat2: 'Developer Promo Page (GitHub Pages)',
+                    v015feat3: 'MIT License & Contributing Guidelines',
+                    v015feat4: 'Issue Tracker & Discussions',
+                    
+                    v010codename: 'Maple', v010date: 'April 4, 2026',
+                    v010desc: 'The foundation is set. Plant your first seeds.',
+                    v010feat1: '5-stage Gamified Growth System',
+                    v010feat2: 'Trophy Garden (365+ days)',
+                    v010feat3: 'Focus Mode',
+                    v010feat4: 'Custom Avatars (12×24)',
+                    v010feat5: 'EN/RU Localization',
+                    v010feat6: 'Dark/Light Themes',
+                    v010feat7: 'Activity Calendar & Stats',
+                    v010feat8: 'JSON Export/Import',
+                    
+                    copyright: 'Cultiva',
+                    footerHome: 'Home', footerAbout: 'About', footerChangelog: 'What\'s New', footerTips: 'Tips', footerPrivacy: 'Privacy',
+                    navgarden: 'Back to Garden',
                 },
                 ru: {
-                    backBtn: '← В сад', archiveTitle: 'Предыдущие версии', pageTitle: 'Что нового',
-                    pageDesc: 'Развивай привычки, развивай себя. Узнай, что выросло в этом релизе и что цветет дальше.',
-                    v01name: 'Maple', badgeLive: 'Релиз', badgeArchived: 'Архив',
-                    v01desc: 'Фундамент заложен. Посади свои первые семена, наблюдай за их ростом и отслеживай прогресс в красивом саду.',
-                    feat1: 'Система роста (5 стадий от Семени до Дерева Наследия)', feat2: 'Сад трофеев для привычек старше 365 дней',
-                    feat3: 'Режим фокуса для отслеживания без отвлечений', feat4: 'Кастомные аватары (12 градиентов × 24 иконки)',
-                    feat5: 'Полная локализация (EN/RU) и Темы (Светлая/Темная)', feat6: 'Календарь активности и статистика',
-                    feat7: 'Экспорт/Импорт JSON и локальное резервное копирование',
-                    v02name: 'Aspen', v02desc: 'Самое масштабное обновление. Аккаунты, изоляция данных.',
-                    feat2_1: 'Безопасная система аккаунтов с хешированием паролей SHA-256',
-                    feat2_2: 'Профили пользователей: имя, почта, аватар, дата рождения',
-                    feat2_3: 'Хранилище IndexedDB (IBD2) с изоляцией данных пользователей',
-                    feat2_4: 'Восстановление сессии при обновлении страницы (F5)',
-                    feat2_5: 'Сохранение аватара: привязка к профилю, а не к глобальным настройкам',
-                    feat2_6: 'Движок GrowthKit: отслеживание серий, геймификация, сад трофеев',
-                    feat2_7: 'Интерфейс в стиле Apple: нейтральный гостевой режим, улучшенные меню, режим фокуса',
-                    feat2_8: 'Полная локализация EN/RU с динамическим переключением языка',
-                    feat2_9: 'Тёмная/Светлая темы с автоопределением системных настроек',
-                    feat2_10: 'Календарь активности в стиле GitHub и статистика привычек',
-                    feat2_11: 'Экспорт/Импорт JSON с локальным резервным копированием',
-                    feat2_12: 'Переключатель архива для просмотра старых версий',
-                    feat2_13: 'Система брендинга: номенклатура CoreV2, GrowthKit, IBD2',
-                    v015name: '"Maple"', v015desc: 'Обновление для разработчиков: документация, GitHub Pages и инфраструктура проекта.',
-                    footerHome: 'Главная', footerAbout: 'О проекте', footerChangelog: 'Что нового'
+                    navFeatures: 'Возможности', navDesktop: 'Десктоп', navTips: 'Советы', navChangelog: 'Что нового', openApp: 'Открыть',
+                    heroBadge: 'Заметки о релизе', heroTitle: 'Что нового', heroDesc: 'Следи за эволюцией Cultiva. Новые функции, улучшения и исправления — выходят регулярно.',
+                    badgeLatest: 'Новое', badgeStable: 'Стабильное', badgeArchived: 'Архив', badgeDesktop: 'Десктоп',
+                    viewArchive: 'Предыдущие версии',
+                    
+                    v030codename: 'Sequoia', v030date: '12 апреля 2026',
+                    v030desc: 'Полностью переработанный Календарь, плюс улучшения движка.',
+                    highlightTitle: 'Главная функция',
+                    v030highlight: 'Новый Календарь с видами Месяц, Неделя и День. Создавай события с точным временем, выбирай цвета и добавляй заметки. Выполненные привычки появляются автоматически.',
+                    v030feat1: 'Календарь с 3 видами',
+                    v030feat2: '12 цветов событий + заметки и время',
+                    v030feat3: 'Интеграция привычек с календарём',
+                    v030feat4: 'Умная работа с часовыми поясами',
+                    v030feat5: 'Поддержка праздников (5 стран)',
+                    v030feat6: 'Выбор 12h/24h формата времени',
+                    v030feat7: 'Обновление движка до GrowthKit2',
+                    v030feat8: 'Код календаря полностью модульный',
+                    
+                    v021codename: 'Aspen Desktop', v021date: '8 апреля 2026',
+                    v021desc: 'Первый нативный десктоп-релиз. Полный опыт Cultiva на Windows.',
+                    desktopHighlightTitle: 'Нативное Windows-приложение',
+                    v021highlight: 'Автономный .exe — браузер не нужен. Установщик с ярлыками в Пуске или портативная версия для флешки.',
+                    v021feat1: 'Нативная поддержка Windows 10/11',
+                    v021feat2: 'Установщик + портативная версия',
+                    v021feat3: 'Ноль телеметрии · Только локальное хранение',
+                    v021feat4: 'Electron 30 · Система сборки Vite 5',
+                    downloadInstaller: '↓ Скачать установщик (.exe)',
+                    viewOnGitHub: 'Смотреть на GitHub →',
+                    
+                    v020codename: 'Aspen', v020date: '6 апреля 2026',
+                    v020desc: 'Аккаунты, изоляция данных и движок GrowthKit.',
+                    v020feat1: 'Безопасные аккаунты (SHA-256)',
+                    v020feat2: 'Профили: имя, почта, аватар, др',
+                    v020feat3: 'IndexedDB с изоляцией пользователей',
+                    v020feat4: 'Восстановление сессии',
+                    v020feat5: 'GrowthKit: стрики и геймификация',
+                    v020feat6: 'Аватар сохраняется за профилем',
+                    
+                    v015codename: 'Maple', v015date: '5 апреля 2026',
+                    v015desc: 'Обновление для разработчиков: документация и инфраструктура.',
+                    v015feat1: 'GitHub Wiki — руководство и архитектура',
+                    v015feat2: 'Промо-страница для разработчиков',
+                    v015feat3: 'Лицензия MIT и правила участия',
+                    v015feat4: 'Трекер задач и обсуждения',
+                    
+                    v010codename: 'Maple', v010date: '4 апреля 2026',
+                    v010desc: 'Фундамент заложен. Посади первые семена.',
+                    v010feat1: '5 стадий роста',
+                    v010feat2: 'Сад трофеев (365+ дней)',
+                    v010feat3: 'Режим фокуса',
+                    v010feat4: 'Кастомные аватары (12×24)',
+                    v010feat5: 'Локализация EN/RU',
+                    v010feat6: 'Тёмная/Светлая темы',
+                    v010feat7: 'Календарь активности и статистика',
+                    v010feat8: 'Экспорт/Импорт JSON',
+                    
+                    copyright: 'Cultiva',
+                    footerHome: 'Главная', footerAbout: 'О проекте', footerChangelog: 'Что нового', footerTips: 'Советы', footerPrivacy: 'Приватность',
+                    navgarden: 'Обратно в Сад'
                 }
             };
-
+            
+            // ============================================ */
+            // STATE                                        */
+            // ============================================ */
+            
+            let currentLang = localStorage.getItem('cultiva-lang') || 'en';
+            let currentTheme = localStorage.getItem('cultiva-theme') || 'auto';
+            
+            // ============================================ */
+            // APPLY LANGUAGE                               */
+            // ============================================ */
+            
             function applyLanguage(lang) {
+                currentLang = lang;
                 const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
+                
                 document.querySelectorAll('[data-i18n]').forEach(el => {
                     const key = el.dataset.i18n;
-                    if (t[key]) el.textContent = t[key];
+                    if (t[key]) {
+                        if (key === 'heroTitle') {
+                            el.innerHTML = t[key];
+                        } else {
+                            el.textContent = t[key];
+                        }
+                    }
                 });
-                document.documentElement.lang = lang;
+                
                 document.querySelectorAll('.lang-option').forEach(opt => {
                     opt.classList.toggle('active', opt.dataset.lang === lang);
                 });
+                
+                document.documentElement.lang = lang;
+                localStorage.setItem('cultiva-lang', lang);
+                updateLangButton();
             }
-
+            
+            // ============================================ */
+            // APPLY THEME                                  */
+            // ============================================ */
+            
             function applyTheme(theme) {
-                document.body.classList.remove('theme-light', 'theme-dark');
+                currentTheme = theme;
                 const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                
+                document.body.classList.remove('theme-light', 'theme-dark');
                 document.body.classList.add(isDark ? 'theme-dark' : 'theme-light');
-                document.getElementById('theme-toggle').textContent = isDark ? '🌙' : '☀️';
+                
+                const themeToggle = document.getElementById('theme-toggle');
+                if (themeToggle) {
+                    themeToggle.textContent = isDark ? 'Light' : 'Dark';
+                }
+                
                 localStorage.setItem('cultiva-theme', theme);
             }
-
-            const archiveToggle = document.getElementById('archive-toggle');
-            const archiveSection = document.getElementById('archive-section');
-            if (archiveToggle && archiveSection) {
-                archiveToggle.addEventListener('click', () => {
-                    archiveSection.classList.toggle('active');
-                    archiveToggle.textContent = archiveSection.classList.contains('active') ? 'Archive ▲' : 'Archive ▼';
-                });
+            
+            function updateLangButton() {
+                const langBtn = document.getElementById('lang-btn');
+                if (langBtn) {
+                    langBtn.textContent = currentLang.toUpperCase();
+                }
             }
-
-            const savedTheme = localStorage.getItem('cultiva-theme') || 'auto';
-            const savedLang = localStorage.getItem('cultiva-lang') || 'en';
-            applyTheme(savedTheme);
-            applyLanguage(savedLang);
-
-            document.getElementById('theme-toggle')?.addEventListener('click', () => {
-                const current = localStorage.getItem('cultiva-theme') || 'auto';
-                const next = current === 'light' ? 'dark' : current === 'dark' ? 'auto' : 'light';
-                applyTheme(next);
-            });
-
-            const langDropdown = document.getElementById('lang-dropdown');
-            document.getElementById('lang-btn')?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                langDropdown?.classList.toggle('active');
-            });
-            document.addEventListener('click', () => langDropdown?.classList.remove('active'));
-            document.querySelectorAll('.lang-option').forEach(opt => {
-                opt.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    localStorage.setItem('cultiva-lang', opt.dataset.lang);
-                    applyLanguage(opt.dataset.lang);
+            
+            // ============================================ */
+            // INITIALIZE                                   */
+            // ============================================ */
+            
+            function init() {
+                applyLanguage(currentLang);
+                applyTheme(currentTheme);
+                updateLangButton();
+                
+                // Archive toggle
+                const archiveToggle = document.getElementById('archive-toggle');
+                const archiveContent = document.getElementById('archive-content');
+                const archiveArrow = document.getElementById('archive-arrow');
+                
+                if (archiveToggle && archiveContent) {
+                    archiveToggle.addEventListener('click', () => {
+                        archiveContent.classList.toggle('active');
+                        archiveArrow.textContent = archiveContent.classList.contains('active') ? '↑' : '↓';
+                    });
+                }
+                
+                // Theme toggle
+                document.getElementById('theme-toggle')?.addEventListener('click', () => {
+                    const next = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'auto' : 'light';
+                    applyTheme(next);
                 });
-            });
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
+                
+                // Language dropdown
+                const langDropdown = document.getElementById('lang-dropdown');
+                const langBtn = document.getElementById('lang-btn');
+                
+                langBtn?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    langDropdown.classList.toggle('active');
+                });
+                
+                document.addEventListener('click', () => {
+                    langDropdown?.classList.remove('active');
+                });
+                
+                document.querySelectorAll('.lang-option').forEach(opt => {
+                    opt.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        applyLanguage(opt.dataset.lang);
+                        langDropdown?.classList.remove('active');
+                    });
+                });
+                
+                // System theme change
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                    if (currentTheme === 'auto') {
+                        applyTheme('auto');
                     }
                 });
-            }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-            document.querySelectorAll('.version-card').forEach(card => observer.observe(card));
-
-            const versionEl = document.getElementById('footer-version');
-            if (versionEl && typeof BRANDING !== 'undefined') {
-                versionEl.textContent = `[${BRANDING.VERSION}] ${BRANDING.CODENAME} 2026`;
             }
-        });
+            
+            init();
+        })();
     </script>
 </body>
 </html>

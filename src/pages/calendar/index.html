@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar | Cultiva</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+    <link rel="stylesheet" href="calendar.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon.ico">
+</head>
+<body class="calendar-page">
+    <!-- ============================================ -->
+    <!-- HEADER                                       -->
+    <!-- ============================================ -->
+    <header class="app-header calendar-header">
+        <div class="header-content calendar-nav">
+            <a href="../../index.html" class="calendar-back">← <span data-i18n="backBtn">Back</span></a>
+            <span class="calendar-title" data-i18n="calendar">Calendar</span>
+            <div class="calendar-controls">
+                <button class="btn-calendar" id="prev-period" aria-label="Previous">‹</button>
+                <button class="btn-calendar" id="today-btn" aria-label="Today">•</button>
+                <button class="btn-calendar" id="next-period" aria-label="Next">›</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================ -->
+    <!-- MAIN                                         -->
+    <!-- ============================================ -->
+    <main class="calendar-container calendar-body">
+        <div class="calendar-grid">
+            <div class="calendar-header-top">
+                <div class="calendar-month" id="calendar-title">April 2026</div>
+                <div class="view-selector">
+                    <button class="view-btn active" data-view="month" data-i18n="month">Month</button>
+                    <button class="view-btn" data-view="week" data-i18n="week">Week</button>
+                    <button class="view-btn" data-view="day" data-i18n="day">Day</button>
+                </div>
+            </div>
+            
+            <!-- ============================================ -->
+            <!-- MONTH VIEW                                   -->
+            <!-- ============================================ -->
+            <div id="month-view" class="month-view active">
+                <div class="calendar-table">
+                    <div class="weekday" data-i18n="mon">Mon</div>
+                    <div class="weekday" data-i18n="tue">Tue</div>
+                    <div class="weekday" data-i18n="wed">Wed</div>
+                    <div class="weekday" data-i18n="thu">Thu</div>
+                    <div class="weekday" data-i18n="fri">Fri</div>
+                    <div class="weekday" data-i18n="sat">Sat</div>
+                    <div class="weekday" data-i18n="sun">Sun</div>
+                </div>
+                <div class="calendar-table" id="month-days"></div>
+            </div>
+            
+            <!-- ============================================ -->
+            <!-- WEEK VIEW                                    -->
+            <!-- ============================================ -->
+            <div id="week-view" class="week-view">
+                <div class="week-header" id="week-header"></div>
+                <div class="timeline-container" id="week-timeline"></div>
+            </div>
+            
+            <!-- ============================================ -->
+            <!-- DAY VIEW                                     -->
+            <!-- ============================================ -->
+            <div id="day-view" class="day-view">
+                <div class="day-view-header">
+                    <div class="day-view-date" id="day-view-date">April 11, 2026</div>
+                    <div class="day-view-weekday" id="day-view-weekday">Friday</div>
+                </div>
+                <div class="day-timeline" id="day-timeline"></div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- EVENT PANEL                                  -->
+        <!-- ============================================ -->
+        <div class="event-panel" id="event-panel">
+            <div class="event-panel-header">
+                <span class="event-panel-title" id="event-panel-title" data-i18n="newEvent">New Event</span>
+                <button class="event-panel-close" id="event-panel-close">×</button>
+            </div>
+            <div class="event-field">
+                <label data-i18n="title">Title</label>
+                <input type="text" class="event-input" id="event-title" data-i18n-placeholder="eventName" placeholder="Event name" autocomplete="off">
+            </div>
+            <div class="event-field">
+                <label data-i18n="color">Color</label>
+                <div class="color-selector" id="event-color-selector"></div>
+            </div>
+            <div class="event-time-row">
+                <div class="event-field">
+                    <label data-i18n="start">Start</label>
+                    <input type="datetime-local" class="event-input" id="event-start">
+                </div>
+            </div>
+            <div class="event-time-row">
+                <div class="event-field">
+                    <label data-i18n="end">End</label>
+                    <input type="datetime-local" class="event-input" id="event-end">
+                </div>
+            </div>
+            <div class="event-field">
+                <label data-i18n="notes">Notes</label>
+                <textarea class="event-input" id="event-notes" rows="2" data-i18n-placeholder="addNotes" placeholder="Add notes..."></textarea>
+            </div>
+            <div class="event-actions">
+                <button class="event-btn event-btn-danger" id="event-delete" data-i18n="delete">Delete</button>
+                <button class="event-btn event-btn-secondary" id="event-cancel" data-i18n="cancel">Cancel</button>
+                <button class="event-btn event-btn-primary" id="event-save" data-i18n="save">Save</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================ -->
+    <!-- FOOTER                                       -->
+    <!-- ============================================ -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <nav class="footer-links">
+                <a href="../../index.html" data-i18n="footerHome">Home</a>
+                <a href="../tips.html" data-i18n="footerTips">Tips</a>
+                <a href="../privacy.html" data-i18n="footerPrivacy">Privacy</a>
+                <a href="https://github.com/krwg/cultiva" target="_blank" rel="noopener">GitHub</a>
+            </nav>
+            <div class="footer-brand"><span class="footer-version">[0.3.0] Sequoia</span></div>
+        </div>
+    </footer>
+
+    <!-- ============================================ -->
+    <!-- HIDDEN ELEMENTS                              -->
+    <!-- ============================================ -->
+    <div id="auth-modal" style="display:none;"></div>
+    <div id="auth-error" style="display:none;"></div>
+    <div id="auth-trigger" style="display:none;"></div>
+    <div id="sign-out-btn" style="display:none;"></div>
+    <div id="open-add-modal" style="display:none;"></div>
+    <div id="stats-modal" style="display:none;"></div>
+    <div id="settings-modal" style="display:none;"></div>
+    <div id="avatar-modal" style="display:none;"></div>
+    <div id="habit-form" style="display:none;"></div>
+    <div id="target-container" style="display:none;"></div>
+    <div id="garden-container" style="display:none;"></div>
+    <div id="trophy-container" style="display:none;"></div>
+    <div id="loading-screen" style="display:none;"></div>
+
+    <script type="module" src="calendar.js"></script>
+
+    <!-- ============================================ -->
+<!-- ANIMATED BACKGROUNDS                          -->
+<!-- ============================================ -->
+<div class="bg-aurora" id="bg-aurora" style="display: none;"></div>
+<div class="bg-rainfall" id="bg-rainfall" style="display: none;"></div>
+<div class="bg-starlight" id="bg-starlight" style="display: none;"></div>
+</body>
+</html>
