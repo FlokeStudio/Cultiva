@@ -1,0 +1,28 @@
+name: "Documentation request"
+description: Create a new ticket for a documentation.
+title: "[Documentation] - <title>"
+labels: [
+  "documentation"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: Short and explicit description of your incident...
+    validations:
+      required: true
+  - type: dropdown
+    id: documentationtype
+    attributes:
+      label: DocumentationType
+      description: Where documentation needs to be added/changed
+      options:
+        - ReadMe
+        - Wiki
+        - Code
+        - Other
+      default: 0
+    validations:
+      required: true

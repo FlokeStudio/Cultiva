@@ -1,0 +1,96 @@
+name: " Plugin Request"
+description: Suggest a new plugin idea for the Cultiva registry
+title: "[PLUGIN] <plugin name or idea>"
+labels: ["plugin", "enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new plugin! 
+        Please fill out this form to help us evaluate your idea.
+
+  - type: input
+    id: name
+    attributes:
+      label: "Plugin Name (proposed)"
+      description: What would you call this plugin?
+      placeholder: "e.g., Pomodoro Timer, Quote of the Day"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: What does this plugin do? What problem does it solve?
+      placeholder: "This plugin would help users to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: "Use Case"
+      description: Who is this for? When would they use it?
+      placeholder: "Users who want to track focus sessions would..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: permissions_needed
+    attributes:
+      label: "Required Permissions"
+      description: What access would this plugin need?
+      multiple: true
+      options:
+        - "storage (save user settings)"
+        - "ui (add header items, show notifications)"
+        - "network (fetch data from external APIs)"
+        - "none (pure logic / UI only)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: external_apis
+    attributes:
+      label: "External APIs / Services"
+      description: Does this plugin rely on third-party services?
+      placeholder: "e.g., OpenWeatherMap API, Spotify Web API"
+    validations:
+      required: false
+
+  - type: textarea
+    id: ui_placement
+    attributes:
+      label: "UI Placement"
+      description: Where should this plugin appear in the app?
+      placeholder: "Header icon / Garden widget / Settings panel / Modal window"
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: "Mockup / Visual Idea (optional)"
+      description: Describe or link to a design concept
+      placeholder: "A small clock icon in the header that shows current time..."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "Would you like to build this?"
+      description: Check if you're interested in developing this plugin
+      options:
+        - label: "Yes, I'd like to build it myself"
+        - label: "No, just suggesting an idea"
+        - label: "Maybe, with guidance / mentorship"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "Additional Context"
+      description: Anything else we should know?
+    validations:
+      required: false

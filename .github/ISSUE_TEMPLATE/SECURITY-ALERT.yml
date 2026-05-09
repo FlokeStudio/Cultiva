@@ -1,0 +1,22 @@
+name: "Security alert"
+description: Create a new ticket for a security.
+title: "[Security alert] - <title>"
+labels: [
+  "security"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: Short and explicit description of your incident...
+    validations:
+      required: true
+  - type: textarea
+    id: instruction
+    attributes:
+      label: "Line(s)"
+      description: Please provide the code or link to the code that has the problem
+    validations:
+      required: false
