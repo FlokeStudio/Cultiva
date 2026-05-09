@@ -1,0 +1,52 @@
+name: "Bug Report"
+description: Create a new ticket for a bug.
+title: "[BUG] - <title>"
+labels: [
+  "bug"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: Short and explicit description of your incident...
+    validations:
+      required: true
+  - type: textarea
+    id: instruction
+    attributes:
+      label: "Instruction"
+      description: Please enter an explicit description of your issue
+      value: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: expect_to_see
+    attributes:
+      label: "Expect to see"
+      description: Please enter what you expect to see after following the instructions
+      placeholder: I expect to see X behavior
+    validations:
+      required: true
+  - type: textarea
+    id: see
+    attributes:
+      label: "See"
+      description: Please enter what you see after following the instructions
+      placeholder: I see X behavior
+    validations:
+      required: true
+  - type: textarea
+    id: for_what
+    attributes:
+      label: "For what"
+      description: Please enter why did you create this issue
+      placeholder: I did this issue, because X
+    validations:
+      required: true
