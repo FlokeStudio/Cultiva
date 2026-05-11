@@ -2,6 +2,7 @@ const { ipcMain } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const crypto = require('crypto');
 const { app } = require('electron');
 
 const PLUGIN_FILES_DIR = path.join(app.getPath('userData'), 'cultiva-plugins');
@@ -57,6 +58,10 @@ function resolveUnderPluginRoot(relativePath) {
     return null;
   }
   return resolved;
+}
+
+function sha256HexOfFile(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
 function assertSafeRelativeFileName(name) {
@@ -185,6 +190,13 @@ function setupPluginIPC() {
         }
         console.log('[Plugin IPC] Downloading:', file.url);
         await downloadFile(file.url, destPath);
+        if (file.sha256 && typeof file.sha256 === 'string') {
+          const expected = file.sha256.trim().toLowerCase();
+          const actual = sha256HexOfFile(destPath);
+          if (actual !== expected) {
+            throw new Error(`Integrity check failed for ${file.name}`);
+          }
+        }
       }
 
       const manifestPath = path.join(pluginDir, 'manifest.json');

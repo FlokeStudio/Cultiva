@@ -3,6 +3,7 @@ import { storage } from '../../modules/storage.js';
 import { habits } from '../../modules/habits.js';
 import { BRANDING } from '../../core/branding.js';
 import { getHolidaysForRegion, getHolidayForDate } from '../../core/holidays.js';
+import { getCultivaTimezone } from '../../core/timezone.js';
 
 document.documentElement.dataset.page = 'calendar';
 
@@ -156,14 +157,9 @@ function generateFireflies(container) {
 /* UTILITIES                                    */
 /* ============================================ */
 
-function getTZ() {
-  const tz = localStorage.getItem('cultiva-timezone') || 'auto';
-  return tz === 'auto' ? undefined : tz;
-}
-
 function getTodayInTZ() {
   const now = new Date();
-  const tz = getTZ();
+  const tz = getCultivaTimezone();
   if (!tz) { return new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
   try {
     const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -180,8 +176,9 @@ function getTodayInTZ() {
 }
 
 function getTodayStr() {
-  const tz = getTZ();
-  return new Date().toLocaleDateString('en-CA', { timeZone: tz });
+  const tz = getCultivaTimezone();
+  const opts = tz ? { timeZone: tz } : {};
+  return new Date().toLocaleDateString('en-CA', opts);
 }
 
 function formatDateKey(date) {

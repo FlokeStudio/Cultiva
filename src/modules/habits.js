@@ -1,65 +1,6 @@
 import { storage } from './storage.js';
 import { GROWTH_STAGES, LEGACY_THRESHOLD, MAX_ACTIVE_HABITS } from '../core/config.js';
-
-/* ============================================ */
-/* TIMEZONE UTILS                               */
-/* ============================================ */
-
-function getCultivaTimezone() {
-  const tz = localStorage.getItem('cultiva-timezone') || 'auto';
-  return tz === 'auto' ? undefined : tz;
-}
-
-function getTodayInTZ() {
-  const now = new Date();
-  const tz = getCultivaTimezone();
-    
-  if (!tz) {
-    return now.toISOString().split('T')[0];
-  }
-    
-  try {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-        
-    const parts = formatter.formatToParts(now);
-    const year = parts.find(p => p.type === 'year').value;
-    const month = parts.find(p => p.type === 'month').value;
-    const day = parts.find(p => p.type === 'day').value;
-        
-    return `${year}-${month}-${day}`;
-  } catch (e) {
-    console.warn('[Habits] Failed to get date with timezone, using local:', e);
-    return now.toISOString().split('T')[0];
-  }
-}
-
-function getDateInTZ(date) {
-  const tz = getCultivaTimezone();
-  if (!tz) {return date.toISOString().split('T')[0];}
-    
-  try {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-        
-    const parts = formatter.formatToParts(date);
-    const year = parts.find(p => p.type === 'year').value;
-    const month = parts.find(p => p.type === 'month').value;
-    const day = parts.find(p => p.type === 'day').value;
-        
-    return `${year}-${month}-${day}`;
-  } catch (e) {
-    return date.toISOString().split('T')[0];
-  }
-}
+import { getCultivaTimezone, getTodayInTZ, getDateInTZ } from '../core/timezone.js';
 
 /* ============================================ */
 /* HABITS CORE                                  */

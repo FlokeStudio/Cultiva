@@ -33,6 +33,19 @@ export const db = {
     });
   },
 
+  async delete(storeName, key) {
+    if (key === undefined || key === null) {
+      return Promise.resolve();
+    }
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const request = tx.objectStore(storeName).delete(key);
+      request.onsuccess = () => resolve();
+      request.onerror = (e) => reject(e.target.error);
+    });
+  },
+
   async put(storeName, data) {
     const db = await this.open();
     return new Promise((resolve, reject) => {

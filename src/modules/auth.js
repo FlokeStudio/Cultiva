@@ -118,6 +118,9 @@ export const auth = {
     return this._sanitizeUser(_currentUser);
   },
 
+  /**
+   * Never expose passwordHash / salt to UI or IPC — only use full user in-memory for verification.
+   */
   _sanitizeUser: function(user) {
     if (!user) { return null; }
 

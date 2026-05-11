@@ -108,15 +108,7 @@ export const pluginManager = {
 
     await storage.init();
 
-    let installed = await storage.get('cultiva-installed-plugins');
-    console.log('[PluginManager] From storage:', installed);
-
-    if (!installed || installed.length === 0) {
-      const ls = localStorage.getItem('cultiva-installed-plugins');
-      installed = ls ? JSON.parse(ls) : [];
-      console.log('[PluginManager] From localStorage:', installed);
-    }
-
+    const installed = (await storage.get('cultiva-installed-plugins')) || [];
     console.log('[PluginManager] Installed plugins:', installed);
 
     for (const pluginId of installed) {
@@ -302,10 +294,12 @@ export const pluginManager = {
       throw new Error('Plugin not found in registry');
     }
 
+    const sh = pluginInfo.sha256 && typeof pluginInfo.sha256 === 'object' ? pluginInfo.sha256 : {};
+    const base = pluginInfo.baseUrl;
     const files = [
-      { name: 'manifest.json', url: `${pluginInfo.baseUrl}/manifest.json` },
-      { name: 'index.js', url: `${pluginInfo.baseUrl}/index.js` },
-      { name: 'styles.css', url: `${pluginInfo.baseUrl}/styles.css` }
+      { name: 'manifest.json', url: `${base}/manifest.json`, sha256: sh['manifest.json'] },
+      { name: 'index.js', url: `${base}/index.js`, sha256: sh['index.js'] },
+      { name: 'styles.css', url: `${base}/styles.css`, sha256: sh['styles.css'] }
     ];
 
     const success = await window.electron.installPlugin(pluginId, files);

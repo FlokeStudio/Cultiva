@@ -6,6 +6,7 @@ import { storage } from './modules/storage.js';
 import { BRANDING } from './core/branding.js';
 import { habits } from './modules/habits.js';
 import { pluginManager } from './core/plugin-manager.js';
+import { getCultivaTimezone, getTodayInTZ, getDateInTZ } from './core/timezone.js';
 
 /* ============================================ */
 /* STATE (declared before pre-init / theme)    */
@@ -29,7 +30,11 @@ if (_preInitSettings) {
   try {
     const parsed = JSON.parse(_preInitSettings);
     if (parsed && typeof parsed === 'object') {
-      Object.assign(settings, parsed); // Обновляем глобальный settings
+      if ('lang' in parsed || 'theme' in parsed) {
+        Object.assign(settings, parsed);
+      } else if (parsed['cultiva-settings'] && typeof parsed['cultiva-settings'] === 'object') {
+        Object.assign(settings, parsed['cultiva-settings']);
+      }
     }
   } catch (e) { console.warn('[Pre-init] Invalid settings JSON'); }
 }
@@ -94,31 +99,8 @@ const focusToggle = document.getElementById('toggle-focus');
 /* TIMEZONE UTILS                               */
 /* ============================================ */
 
-function getCultivaTimezone() {
-  const tz = localStorage.getItem('cultiva-timezone') || 'auto';
-  return tz === 'auto' ? undefined : tz;
-}
-
 function getTodayStr() {
-  const tz = getCultivaTimezone();
-  const now = new Date();
-    
-  if (!tz) {
-    return now.toISOString().split('T')[0];
-  }
-    
-  try {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: tz,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-    return formatter.format(now);
-  } catch (e) {
-    console.warn('[Main] Failed to get date with timezone, using local:', e);
-    return now.toISOString().split('T')[0];
-  }
+  return getTodayInTZ();
 }
 
 function _formatCultivaDate(dateObj) {
@@ -130,14 +112,7 @@ function _formatCultivaDate(dateObj) {
 }
 
 function _getLocalISOString(dateObj) {
-  const tz = getCultivaTimezone();
-  const parts = new Intl.DateTimeFormat('en-CA', { 
-    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' 
-  }).formatToParts(dateObj);
-  const y = parts.find(p => p.type === 'year').value;
-  const m = parts.find(p => p.type === 'month').value;
-  const d = parts.find(p => p.type === 'day').value;
-  return `${y}-${m}-${d}`;
+  return getDateInTZ(dateObj);
 }
 
 function applyBranding() {
@@ -626,31 +601,76 @@ async function loadInstalledPlugins() {
   if (!container) {
     return;
   }
-  
+
   const plugins = pluginManager.getInstalledPlugins();
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
-  
+
+  container.replaceChildren();
+
   if (plugins.length === 0) {
-    container.innerHTML = `<div class="plugins-empty" data-i18n="noPluginsInstalled">${t.noPluginsInstalled}</div>`;
+    const empty = document.createElement('div');
+    empty.className = 'plugins-empty';
+    empty.dataset.i18n = 'noPluginsInstalled';
+    empty.textContent = t.noPluginsInstalled;
+    container.appendChild(empty);
     return;
   }
-  
-  container.innerHTML = plugins.map(p => `
-    <div class="plugin-card">
-      <div class="plugin-icon">${p.icon || '🔌'}</div>
-      <div class="plugin-info">
-        <div class="plugin-name">${p.name}</div>
-        <div class="plugin-description">${p.description || ''}</div>
-        <div class="plugin-meta">
-          <span class="plugin-version">v${p.version}</span>
-        </div>
-      </div>
-      <div class="plugin-actions">
-        <button class="plugin-btn plugin-btn-settings" onclick="window.openPluginSettings('${p.id}')" title="${t.pluginSettings}">⚙️</button>
-        <button class="plugin-btn plugin-btn-uninstall" onclick="window.uninstallPlugin('${p.id}')" title="${t.uninstall}">🗑️</button>
-      </div>
-    </div>
-  `).join('');
+
+  for (const p of plugins) {
+    const card = document.createElement('div');
+    card.className = 'plugin-card';
+
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'plugin-icon';
+    iconWrap.textContent = p.icon || '🔌';
+
+    const info = document.createElement('div');
+    info.className = 'plugin-info';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'plugin-name';
+    nameEl.textContent = p.name || '';
+
+    const descEl = document.createElement('div');
+    descEl.className = 'plugin-description';
+    descEl.textContent = p.description || '';
+
+    const meta = document.createElement('div');
+    meta.className = 'plugin-meta';
+    const ver = document.createElement('span');
+    ver.className = 'plugin-version';
+    ver.textContent = `v${p.version || ''}`;
+    meta.appendChild(ver);
+
+    info.appendChild(nameEl);
+    info.appendChild(descEl);
+    info.appendChild(meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'plugin-actions';
+
+    const btnSettings = document.createElement('button');
+    btnSettings.type = 'button';
+    btnSettings.className = 'plugin-btn plugin-btn-settings';
+    btnSettings.title = t.pluginSettings;
+    btnSettings.textContent = '⚙️';
+    btnSettings.addEventListener('click', () => window.openPluginSettings(p.id));
+
+    const btnUninstall = document.createElement('button');
+    btnUninstall.type = 'button';
+    btnUninstall.className = 'plugin-btn plugin-btn-uninstall';
+    btnUninstall.title = t.uninstall;
+    btnUninstall.textContent = '🗑️';
+    btnUninstall.addEventListener('click', () => window.uninstallPlugin(p.id));
+
+    actions.appendChild(btnSettings);
+    actions.appendChild(btnUninstall);
+
+    card.appendChild(iconWrap);
+    card.appendChild(info);
+    card.appendChild(actions);
+    container.appendChild(card);
+  }
 }
 
 async function loadAvailablePlugins() {
@@ -658,40 +678,85 @@ async function loadAvailablePlugins() {
   if (!container) {
     return;
   }
-  
+
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
-  container.innerHTML = `<div class="plugins-loading" data-i18n="checkingPlugins">${t.checkingPlugins}</div>`;
-  
+  container.replaceChildren();
+  const loading = document.createElement('div');
+  loading.className = 'plugins-loading';
+  loading.dataset.i18n = 'checkingPlugins';
+  loading.textContent = t.checkingPlugins;
+  container.appendChild(loading);
+
   try {
     const plugins = await pluginManager.getAvailablePlugins();
-    
-    const available = plugins.filter(p => !p.installed);
-    
+    const available = plugins.filter((p) => !p.installed);
+
+    container.replaceChildren();
+
     if (available.length === 0) {
-      container.innerHTML = `<div class="plugins-empty" data-i18n="noPluginsAvailable">${t.noPluginsAvailable}</div>`;
+      const empty = document.createElement('div');
+      empty.className = 'plugins-empty';
+      empty.dataset.i18n = 'noPluginsAvailable';
+      empty.textContent = t.noPluginsAvailable;
+      container.appendChild(empty);
       return;
     }
-    
-    container.innerHTML = available.map(p => `
-      <div class="plugin-card">
-        <div class="plugin-icon">${p.icon || '🔌'}</div>
-        <div class="plugin-info">
-          <div class="plugin-name">${p.name}</div>
-          <div class="plugin-description">${p.description || ''}</div>
-          <div class="plugin-meta">
-            <span class="plugin-version">v${p.version}</span>
-            <span class="plugin-author">${p.author}</span>
-          </div>
-        </div>
-        <div class="plugin-actions">
-          <button class="plugin-btn plugin-btn-install" onclick="window.installPlugin('${p.id}')">
-            ${t.install}
-          </button>
-        </div>
-      </div>
-    `).join('');
-  } catch (e) {
-    container.innerHTML = `<div class="plugins-empty">${t.pluginInstallFailed}</div>`;
+
+    for (const p of available) {
+      const card = document.createElement('div');
+      card.className = 'plugin-card';
+
+      const iconWrap = document.createElement('div');
+      iconWrap.className = 'plugin-icon';
+      iconWrap.textContent = p.icon || '🔌';
+
+      const info = document.createElement('div');
+      info.className = 'plugin-info';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'plugin-name';
+      nameEl.textContent = p.name || '';
+
+      const descEl = document.createElement('div');
+      descEl.className = 'plugin-description';
+      descEl.textContent = p.description || '';
+
+      const meta = document.createElement('div');
+      meta.className = 'plugin-meta';
+      const ver = document.createElement('span');
+      ver.className = 'plugin-version';
+      ver.textContent = `v${p.version || ''}`;
+      const author = document.createElement('span');
+      author.className = 'plugin-author';
+      author.textContent = p.author !== null && p.author !== undefined ? String(p.author) : '';
+      meta.appendChild(ver);
+      meta.appendChild(author);
+
+      info.appendChild(nameEl);
+      info.appendChild(descEl);
+      info.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'plugin-actions';
+      const btnInstall = document.createElement('button');
+      btnInstall.type = 'button';
+      btnInstall.className = 'plugin-btn plugin-btn-install';
+      btnInstall.textContent = t.install;
+      const pid = p.id;
+      btnInstall.addEventListener('click', () => window.installPlugin(pid));
+      actions.appendChild(btnInstall);
+
+      card.appendChild(iconWrap);
+      card.appendChild(info);
+      card.appendChild(actions);
+      container.appendChild(card);
+    }
+  } catch {
+    container.replaceChildren();
+    const err = document.createElement('div');
+    err.className = 'plugins-empty';
+    err.textContent = t.pluginInstallFailed;
+    container.appendChild(err);
   }
 }
 
@@ -742,11 +807,14 @@ function renderPluginHeaderItems() {
     if (pluginData?.headerItem) {
       const item = document.createElement('div');
       item.className = 'header-plugin-item';
-      item.innerHTML = `
-        <span class="header-plugin-icon">${pluginData.headerItem.icon}</span>
-        <span>${pluginData.headerItem.label}</span>
-      `;
-      
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'header-plugin-icon';
+      iconSpan.textContent = pluginData.headerItem.icon || '';
+      const labelSpan = document.createElement('span');
+      labelSpan.textContent = pluginData.headerItem.label || '';
+      item.appendChild(iconSpan);
+      item.appendChild(labelSpan);
+
       item.onclick = () => {
         const hi = pluginData.headerItem;
         
