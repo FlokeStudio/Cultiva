@@ -7,11 +7,22 @@ import { BRANDING } from './core/branding.js';
 import { habits } from './modules/habits.js';
 import { pluginManager } from './core/plugin-manager.js';
 
+/* ============================================ */
+/* STATE (declared before pre-init / theme)    */
+/* ============================================ */
+const settings = {
+  lang: 'en',
+  theme: 'auto',
+  showTrophies: false,
+  focusMode: false,
+  holidayRegion: 'us',
+  avatar: { background: 'green', emoji: '🌱' },
+  pluginsEnabled: true
+};
 
 /* ============================================ */
 /* PRE-INIT STATE RECOVERY                      */
 /* ============================================ */
-
 
 const _preInitSettings = localStorage.getItem('cultiva-settings');
 if (_preInitSettings) {
@@ -41,7 +52,9 @@ if (_preInitSettings) {
 let _appReady = null;
 
 async function ensureAppReady() {
-  if (_appReady) return _appReady;
+  if (_appReady) {
+    return _appReady;
+  }
   
   _appReady = (async () => {
     await storage.init();
@@ -138,19 +151,6 @@ function applyBranding() {
     aboutVersion.textContent = `Version [${BRANDING.VERSION}] ${BRANDING.CODENAME} Desktop`;
   }
 }
-
-/* ============================================ */
-/* STATE                                        */
-/* ============================================ */
-const settings = { 
-  lang: 'en', 
-  theme: 'auto', 
-  showTrophies: false, 
-  focusMode: false,
-  holidayRegion: 'us',
-  avatar: { background: 'green', emoji: '🌱' },
-  pluginsEnabled: true
-};
 
 /* ============================================ */
 /* AVATAR DATA                                  */
@@ -265,7 +265,9 @@ function applySettings() {
   if (langSelect) { 
     langSelect.value = settings.lang; 
     // Принудительно триггерим, если значение не применилось
-    if (langSelect.value !== settings.lang) langSelect.value = settings.lang; 
+    if (langSelect.value !== settings.lang) {
+      langSelect.value = settings.lang;
+    }
   }
   applyTranslations(settings.lang);
   
@@ -621,7 +623,9 @@ async function renderPluginsSection() {
 
 async function loadInstalledPlugins() {
   const container = document.getElementById('installed-plugins-list');
-  if (!container) return;
+  if (!container) {
+    return;
+  }
   
   const plugins = pluginManager.getInstalledPlugins();
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
@@ -651,7 +655,9 @@ async function loadInstalledPlugins() {
 
 async function loadAvailablePlugins() {
   const container = document.getElementById('available-plugins-list');
-  if (!container) return;
+  if (!container) {
+    return;
+  }
   
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
   container.innerHTML = `<div class="plugins-loading" data-i18n="checkingPlugins">${t.checkingPlugins}</div>`;

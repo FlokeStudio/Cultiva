@@ -225,8 +225,9 @@ function createWindow() {
     return { action: 'allow' };
   });
 
-
-  mainWindow.webContents.openDevTools({ mode: 'detach' });
+  if (isDev) {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
 
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
     try {
@@ -262,20 +263,31 @@ function createWindow() {
     }
   });
 
-mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-  callback({
-    responseHeaders: {
-      ...details.responseHeaders,
-      'Content-Security-Policy': [
-        "default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data:; " +
-        "img-src 'self' data: blob: file: https:; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "connect-src 'self' https://raw.githubusercontent.com https://api.github.com https://github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
-        "font-src 'self' data:;"
-      ]
-    }
+  const cspProduction =
+    "default-src 'self' file: data: blob:; " +
+    "script-src 'self' 'unsafe-inline' file: blob:; " +
+    "img-src 'self' data: blob: file: https:; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "connect-src 'self' https://raw.githubusercontent.com https://api.github.com https://github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
+    "font-src 'self' data:;";
+
+  const cspDev =
+    "default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: blob: http: https: ws: wss:; " +
+    "img-src 'self' data: blob: file: https: http:; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' file: blob: http: https:; " +
+    "connect-src 'self' https: http: ws: wss: https://raw.githubusercontent.com https://api.github.com https://github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
+    "font-src 'self' data:;";
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    const useDevCsp = isDev && Boolean(process.env.VITE_DEV_SERVER_URL);
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [useDevCsp ? cspDev : cspProduction]
+      }
+    });
   });
-});
 
   mainWindow.webContents.on('did-navigate', (event, url) => {
     console.log('[Electron] Navigated to:', url);
