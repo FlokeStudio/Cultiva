@@ -59,6 +59,15 @@ function migrateHabit(habit) {
     migrated.dailyProgress = {};
   }
 
+  const tt = String(migrated.trackType || 'binary').toLowerCase();
+  migrated.trackType = tt === 'quantity' ? 'quantity' : 'binary';
+  const tgtNum = Number(migrated.target);
+  if (migrated.trackType === 'quantity') {
+    migrated.target = Number.isFinite(tgtNum) && tgtNum > 0 ? tgtNum : 1;
+  } else {
+    migrated.target = 1;
+  }
+
   if (migrated.userId && migrated.userId.includes('@')) {
     migrated.userId = null;
   }

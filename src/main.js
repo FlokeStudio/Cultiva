@@ -94,6 +94,14 @@ const langSelect = document.getElementById('lang-select');
 const themeSelect = document.getElementById('theme-select');
 const trophyToggle = document.getElementById('toggle-trophies');
 const focusToggle = document.getElementById('toggle-focus');
+const quantityLogModal = document.getElementById('quantity-log-modal');
+const quantityLogInput = document.getElementById('quantity-log-input');
+const quantityLogTitle = document.getElementById('quantity-log-title');
+const quantityLogDesc = document.getElementById('quantity-log-desc');
+const quantityLogLabel = document.getElementById('quantity-log-label');
+
+/** @type {null | ((value: number | null) => void)} */
+let quantityLogResolve = null;
 
 /* ============================================ */
 /* TIMEZONE UTILS                               */
@@ -1259,7 +1267,42 @@ function renderGarden() {
 /* ============================================ */
 
 function openModal(modal) { if (!modal) { return; } modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
-function closeModal(modal) { if (!modal) { return; } modal.classList.remove('active'); document.body.style.overflow = ''; }
+function closeModal(modal) {
+  if (!modal) { return; }
+  if (modal.id === 'quantity-log-modal' && quantityLogResolve) {
+    const done = quantityLogResolve;
+    quantityLogResolve = null;
+    done(null);
+  }
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function openQuantityLogModal(habit, currentValue, t) {
+  return new Promise((resolve) => {
+    quantityLogResolve = resolve;
+    if (quantityLogTitle) { quantityLogTitle.textContent = habit.treeName || habit.name; }
+    if (quantityLogDesc) {
+      const goal = habits.quantityTarget(habit);
+      const bits = [`${t.goal}: ${goal}`];
+      if (habit.unit) { bits.push(String(habit.unit)); }
+      if (t.quantityLogSubtitle) { bits.push(t.quantityLogSubtitle); }
+      quantityLogDesc.textContent = bits.join(' — ');
+    }
+    if (quantityLogLabel) { quantityLogLabel.textContent = t.quantityLogLabel || t.quantityLogPrompt || 'Total for today'; }
+    if (quantityLogInput) {
+      quantityLogInput.value = String(currentValue);
+      openModal(quantityLogModal);
+      setTimeout(() => {
+        quantityLogInput.focus();
+        quantityLogInput.select();
+      }, 50);
+    } else {
+      quantityLogResolve = null;
+      resolve(null);
+    }
+  });
+}
 
 function openStats(id) {
   const s = habits.getStats(id);
@@ -1656,6 +1699,7 @@ function initEvents() {
     btn.addEventListener('click', (e) => {
       if (e.target === btn || btn.classList.contains('modal-close')) {
         closeModal(addModal); closeModal(statsModal); closeModal(settingsModal); closeModal(authModal);
+        closeModal(quantityLogModal);
       }
     });
   });
@@ -1664,6 +1708,7 @@ function initEvents() {
     if (e.key === 'Escape') {
       if (settings.focusMode) { toggleFocusMode(false); showNotification('Focus Mode Disabled'); }
       closeModal(addModal); closeModal(statsModal); closeModal(settingsModal); closeModal(authModal);
+      closeModal(quantityLogModal);
     }
     if ((e.ctrlKey || e.metaKey) && (e.key === 'n' || e.key === 'N')) {
       const ae = document.activeElement;
@@ -1688,11 +1733,34 @@ function initEvents() {
     });
   });
     
+  document.getElementById('quantity-log-save')?.addEventListener('click', () => {
+    const t = TRANSLATIONS[settings.lang];
+    const raw = quantityLogInput?.value;
+    const parsed = Number(String(raw ?? '').trim().replace(',', '.'));
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      showNotification(t.invalidQuantity || 'Enter a valid number (0 or greater)');
+      return;
+    }
+    const done = quantityLogResolve;
+    quantityLogResolve = null;
+    closeModal(quantityLogModal);
+    if (done) { done(parsed); }
+  });
+  document.getElementById('quantity-log-cancel')?.addEventListener('click', () => {
+    closeModal(quantityLogModal);
+  });
+  quantityLogInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('quantity-log-save')?.click();
+    }
+  });
+
   habitForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('habit-name')?.value.trim();
     if (!name) { return; }
-    const trackType = document.querySelector('input[name="track-type"]:checked')?.value || 'binary';
+    const trackType = document.querySelector('input[name="track-type"]:checked')?.value === 'quantity' ? 'quantity' : 'binary';
     try {
       habits.add({
         name,
@@ -1729,16 +1797,22 @@ function initEvents() {
       if (h.trackType === 'quantity') {
         const cur = habits.quantityDayProgress(h, today);
         const t = TRANSLATIONS[settings.lang];
-        const unitHint = h.unit ? ` (${h.unit})` : '';
-        const amt = prompt(`${t.quantityLogPrompt || 'Total for today'}${unitHint}:`, String(cur));
-        if (amt === null) { return; }
-        const parsed = Number(String(amt).trim().replace(',', '.'));
-        if (!Number.isFinite(parsed) || parsed < 0) {
-          showNotification(t.invalidQuantity || 'Enter a valid number (0 or greater)');
-          return;
-        }
-        habits.toggle(id, parsed);
-      } else { habits.toggle(id); }
+        openQuantityLogModal(h, cur, t).then((parsed) => {
+          if (parsed === null) { return; }
+          if (!Number.isFinite(parsed) || parsed < 0) {
+            showNotification(t.invalidQuantity || 'Enter a valid number (0 or greater)');
+            return;
+          }
+          habits.toggle(id, parsed);
+          renderGarden();
+          const c = document.querySelector(`.habit-card[data-id="${id}"]`);
+          c?.querySelector('.plant-visual')?.classList.add('growing');
+          setTimeout(() => c?.querySelector('.plant-visual')?.classList.remove('growing'), 250);
+          showNotification(TRANSLATIONS[settings.lang].progressSaved);
+        });
+        return;
+      }
+      habits.toggle(id);
             
       renderGarden();
       card.querySelector('.plant-visual')?.classList.add('growing');

@@ -2,6 +2,7 @@ import { storage } from '../modules/storage.js';
 import { BRANDING } from './branding.js';
 import { PluginSandboxHost } from './plugin-sandbox-host.js';
 
+/** Public plugin store; install copies files into userData/cultiva-plugins via Electron (never from a local repo plugins/ path). */
 const REGISTRY_URL = 'https://raw.githubusercontent.com/krwg/CultivaPlugins/main/registry.json';
 
 const plugins = new Map();
@@ -38,13 +39,14 @@ function _wireSandboxHost(host, pluginId, manifest) {
       return storage.set(prefix + args[0], args[1]);
     }
     if (method === 'ui.showNotification') {
-      const text = args[0];
-      const icon = args[1] ?? '🔌';
+      const icon = args[0] ?? '🔌';
+      const text = args[1] ?? '';
       if (typeof window.showNotification === 'function') {
         window.showNotification(icon, text);
       } else {
         console.warn('[Plugin] showNotification not available');
       }
+      return undefined;
     }
   });
 
@@ -123,6 +125,39 @@ export const pluginManager = {
     console.log('[PluginManager] Initialized with', plugins.size, 'plugins');
   },
 
+  async _injectPluginStyles(pluginId, manifest) {
+    if (!manifest || !Array.isArray(manifest.styles) || !window.electron?.readPluginFile) {
+      return;
+    }
+    const chunks = [];
+    for (const rel of manifest.styles) {
+      if (typeof rel !== 'string' || !rel.trim()) {
+        continue;
+      }
+      const name = rel.replace(/^[/\\]+/, '');
+      const css = await window.electron.readPluginFile(`${pluginId}/${name}`);
+      if (css) {
+        chunks.push(css);
+      }
+    }
+    if (!chunks.length) {
+      return;
+    }
+    const id = `cultiva-plugin-style-${pluginId}`;
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    el.textContent = chunks.join('\n');
+  },
+
+  _removePluginStyles(pluginId) {
+    document.getElementById(`cultiva-plugin-style-${pluginId}`)?.remove();
+    document.getElementById('weather-plugin-styles')?.remove();
+  },
+
   async loadPlugin(pluginId) {
     try {
       console.log('[PluginManager] Loading plugin from disk:', pluginId);
@@ -173,6 +208,12 @@ export const pluginManager = {
         instance: instanceProxy,
         enabled: true
       });
+
+      try {
+        await this._injectPluginStyles(pluginId, manifest);
+      } catch (err) {
+        console.warn('[PluginManager] Style inject failed:', pluginId, err);
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -371,6 +412,8 @@ export const pluginManager = {
     if (widget) {
       widget.remove();
     }
+
+    this._removePluginStyles(pluginId);
 
     if (typeof window.renderPluginHeaderItems === 'function') {
       window.renderPluginHeaderItems();

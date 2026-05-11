@@ -112,6 +112,8 @@ export const TRANSLATIONS = {
     pluginDisabled: 'Plugin disabled',
     pluginSettingsComingSoon: 'Plugin settings coming soon',
     quantityLogPrompt: 'Total completed for today',
+    quantityLogLabel: 'Amount for today',
+    quantityLogSubtitle: 'Enter how much you completed today (decimals allowed).',
     invalidQuantity: 'Enter a valid number (0 or greater)',
     addHabitShortcutHint: 'Ctrl+N (⌘N on Mac)',
 
@@ -228,6 +230,8 @@ export const TRANSLATIONS = {
     pluginDisabled: 'Плагин выключен',
     pluginSettingsComingSoon: 'Настройки плагина скоро появятся',
     quantityLogPrompt: 'Сумма за сегодня',
+    quantityLogLabel: 'Значение за сегодня',
+    quantityLogSubtitle: 'Введите, сколько сделано сегодня (можно с десятичной частью).',
     invalidQuantity: 'Введите корректное число (≥ 0)',
     addHabitShortcutHint: 'Ctrl+N (⌘N на Mac)',
   }

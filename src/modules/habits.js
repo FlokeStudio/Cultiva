@@ -39,8 +39,10 @@ export const habits = {
       name: data.name,
       description: data.description || '',
       category: data.category || 'other',
-      trackType: data.trackType || 'binary',
-      target: data.target || 1,
+      trackType: data.trackType === 'quantity' ? 'quantity' : 'binary',
+      target: data.trackType === 'quantity'
+        ? (Number.isFinite(Number(data.target)) && Number(data.target) > 0 ? Number(data.target) : 1)
+        : 1,
       unit: data.unit || '',
       startDate: data.startDate || today,
       progress: 0,

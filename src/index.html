@@ -168,6 +168,28 @@
         </div>
     </div>
 
+    <!-- MODAL: QUANTITY LOG (Electron prompt is unreliable) -->
+    <div class="modal" id="quantity-log-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-sheet" style="max-width:420px;">
+            <div class="modal-header">
+                <h2 id="quantity-log-title">—</h2>
+                <button type="button" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="quantity-log-desc" style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);"></p>
+                <div class="form-group">
+                    <label id="quantity-log-label" for="quantity-log-input">—</label>
+                    <input type="text" id="quantity-log-input" class="select-input" inputmode="decimal" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="modal-actions" style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn-secondary" id="quantity-log-cancel" data-i18n="cancel">Cancel</button>
+                    <button type="button" class="btn-primary" id="quantity-log-save" data-i18n="save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL: STATS -->
     <div class="modal" id="stats-modal">
         <div class="modal-overlay"></div>

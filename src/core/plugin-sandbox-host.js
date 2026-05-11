@@ -85,8 +85,8 @@ function buildSandboxDocument(pluginId, manifest, pluginCode) {
         });
         send({ type: 'GARDEN_REGISTER', position: position });
       },
-      showNotification: function (text, icon) {
-        return rpc('ui.showNotification', [text, icon != null ? icon : '\\uD83D\\uDD0C']);
+      showNotification: function (icon, text) {
+        return rpc('ui.showNotification', [icon != null ? icon : '\\uD83D\\uDD0C', text != null ? String(text) : '']);
       }
     }
   };
