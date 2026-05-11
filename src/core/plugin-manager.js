@@ -295,12 +295,29 @@ export const pluginManager = {
     }
 
     const sh = pluginInfo.sha256 && typeof pluginInfo.sha256 === 'object' ? pluginInfo.sha256 : {};
-    const base = pluginInfo.baseUrl;
+    const base = String(pluginInfo.baseUrl).replace(/\/$/, '');
+
+    const manifestRes = await fetch(`${base}/manifest.json`);
+    if (!manifestRes.ok) {
+      throw new Error(`Could not fetch plugin manifest (HTTP ${manifestRes.status})`);
+    }
+    const manifest = await manifestRes.json();
+    const entryFile = typeof manifest.entry === 'string' && manifest.entry.trim() ? manifest.entry.trim() : 'index.js';
+
     const files = [
       { name: 'manifest.json', url: `${base}/manifest.json`, sha256: sh['manifest.json'] },
-      { name: 'index.js', url: `${base}/index.js`, sha256: sh['index.js'] },
-      { name: 'styles.css', url: `${base}/styles.css`, sha256: sh['styles.css'] }
+      { name: entryFile, url: `${base}/${entryFile}`, sha256: sh[entryFile] }
     ];
+
+    if (Array.isArray(manifest.styles)) {
+      for (const rel of manifest.styles) {
+        if (typeof rel !== 'string' || !rel.trim()) {
+          continue;
+        }
+        const name = rel.replace(/^[/\\]+/, '');
+        files.push({ name, url: `${base}/${name}`, sha256: sh[name] });
+      }
+    }
 
     const success = await window.electron.installPlugin(pluginId, files);
 
@@ -389,8 +406,9 @@ export const pluginManager = {
   },
 
   checkVersion(current, required) {
-    const currentParts = current.split('.').map(Number);
-    const requiredParts = required.split('.').map(Number);
+    const strip = (v) => String(v || '').split(/[-+]/)[0];
+    const currentParts = strip(current).split('.').map((x) => parseInt(x, 10) || 0);
+    const requiredParts = strip(required).split('.').map((x) => parseInt(x, 10) || 0);
 
     for (let i = 0; i < Math.max(currentParts.length, requiredParts.length); i++) {
       const c = currentParts[i] || 0;

@@ -1388,7 +1388,7 @@ function updateUpdatesSection() {
     
   document.getElementById('view-releases-link')?.addEventListener('click', (e) => {
     e.preventDefault();
-    window.open('https://github.com/krwg/CultivaDesktop/releases', '_blank');
+    window.open('https://github.com/krwg/Cultiva/releases', '_blank');
   });
 }
 
@@ -1451,7 +1451,7 @@ async function fetchReleaseInfo() {
   }
     
   try {
-    const response = await fetch('https://api.github.com/repos/krwg/CultivaDesktop/releases');
+    const response = await fetch('https://api.github.com/repos/krwg/Cultiva/releases');
         
     if (!response.ok) {
       throw new Error(`GitHub API error: ${response.status}`);
@@ -1480,7 +1480,7 @@ async function fetchReleaseInfo() {
     releaseInfo.innerHTML = `
             <div class="release-loading">
                 Failed to load releases<br>
-                <a href="#" onclick="window.open('https://github.com/krwg/CultivaDesktop/releases', '_blank'); return false;" style="color: var(--accent-blue);">
+                <a href="#" onclick="window.open('https://github.com/krwg/Cultiva/releases', '_blank'); return false;" style="color: var(--accent-blue);">
                     View on GitHub →
                 </a>
             </div>

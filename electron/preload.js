@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
+  encryptAuthSecret: (plainText) => ipcRenderer.invoke('auth:encrypt-secret', plainText),
+  decryptAuthSecret: (b64) => ipcRenderer.invoke('auth:decrypt-secret', b64),
   navigateTo: (page) => ipcRenderer.invoke('navigate-to', page),
   openCalendarWindow: () => ipcRenderer.send('open-calendar-window'),
   onUpdateMessage: (callback) => ipcRenderer.on('update-message', (_event, message) => callback(message)),

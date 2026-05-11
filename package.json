@@ -1,6 +1,6 @@
 {
   "name": "cultiva",
-  "version": "0.4.0-beta.0",
+  "version": "0.4.0-beta.1",
   "description": "Grow your habits. Grow yourself.",
   "main": "electron/main.cjs",
   "type": "module",
@@ -23,7 +23,7 @@
     "publish": {
       "provider": "github",
       "owner": "krwg",
-      "repo": "CultivaDesktop",
+      "repo": "Cultiva",
       "releaseType": "release"
     },
     "directories": {

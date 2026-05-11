@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const pkg = require('../package.json');
@@ -473,6 +473,28 @@ ipcMain.handle('discord:set-locale', (event, locale) => {
     updateDiscordActivity({ locale: currentLocale });
   }
   return { success: true };
+});
+
+ipcMain.handle('auth:encrypt-secret', (event, plainText) => {
+  try {
+    if (!safeStorage.isEncryptionAvailable()) {
+      return { ok: false, error: 'OS encryption is not available for safeStorage' };
+    }
+    const buf = safeStorage.encryptString(String(plainText));
+    return { ok: true, data: Buffer.from(buf).toString('base64') };
+  } catch (e) {
+    return { ok: false, error: e && e.message ? e.message : String(e) };
+  }
+});
+
+ipcMain.handle('auth:decrypt-secret', (event, b64) => {
+  try {
+    const buf = Buffer.from(String(b64), 'base64');
+    const data = safeStorage.decryptString(buf);
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e && e.message ? e.message : String(e) };
+  }
 });
 
 /* ============================================ */
