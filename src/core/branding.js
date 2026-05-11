@@ -7,8 +7,8 @@ export const BRANDING = {
   CORE_ENGINE: 'CoreV2',         
   HABIT_ENGINE: 'GrowthKit2',      
   DATABASE: 'IDB2',               
-  VERSION: '0.3.6',
-  CODENAME: 'Sequoia',
+  VERSION: '0.4.0-beta.0',
+  CODENAME: 'Beta',
   
   KEYS: {
     SESSION: 'cultiva_current_session',

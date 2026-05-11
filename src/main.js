@@ -717,10 +717,14 @@ window.openPluginSettings = (pluginId) => {
 };
 
 function renderPluginHeaderItems() {
-  if (!settings.pluginsEnabled) return;
-  
+  if (!settings.pluginsEnabled) {
+    return;
+  }
+
   const headerActions = document.querySelector('.header-actions');
-  if (!headerActions) return;
+  if (!headerActions) {
+    return;
+  }
   
   document.querySelectorAll('.header-plugin-item').forEach(el => el.remove());
   
@@ -746,7 +750,7 @@ function renderPluginHeaderItems() {
         }
 
         else if (hi.onClick) {
-          hi.onClick.call(hi.instance);
+          hi.onClick();
         }
 
         else {
