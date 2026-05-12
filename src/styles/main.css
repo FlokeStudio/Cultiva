@@ -2574,3 +2574,11 @@ body.theme-sequoia {
 .header-plugin-icon {
     font-size: 16px;
 }
+
+.header-plugin-icon--empty {
+    display: none;
+}
+
+.header-plugin-label {
+    font-variant-numeric: tabular-nums;
+}

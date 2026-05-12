@@ -928,11 +928,35 @@ function renderPluginHeaderItems() {
     if (pluginData?.headerItem) {
       const item = document.createElement('div');
       item.className = 'header-plugin-item';
+      item.dataset.pluginId = plugin.id;
       const iconSpan = document.createElement('span');
       iconSpan.className = 'header-plugin-icon';
       iconSpan.textContent = pluginData.headerItem.icon || '';
+      if (!(pluginData.headerItem.icon || '').toString().trim()) {
+        iconSpan.classList.add('header-plugin-icon--empty');
+      }
       const labelSpan = document.createElement('span');
+      labelSpan.className = 'header-plugin-label';
       labelSpan.textContent = pluginData.headerItem.label || '';
+      labelSpan.style.color = pluginData.headerItem.labelColor || '';
+      const pend = pluginData._pendingHeaderUi;
+      if (pend) {
+        if (pend.icon !== null && pend.icon !== undefined) {
+          iconSpan.textContent = pend.icon;
+        }
+        if (pend.label !== null && pend.label !== undefined) {
+          labelSpan.textContent = pend.label;
+        }
+        if (pend.labelColor !== null && pend.labelColor !== undefined) {
+          labelSpan.style.color = pend.labelColor || '';
+        }
+        if (!(iconSpan.textContent || '').trim()) {
+          iconSpan.classList.add('header-plugin-icon--empty');
+        } else {
+          iconSpan.classList.remove('header-plugin-icon--empty');
+        }
+        delete pluginData._pendingHeaderUi;
+      }
       item.appendChild(iconSpan);
       item.appendChild(labelSpan);
 

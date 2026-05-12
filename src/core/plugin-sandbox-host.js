@@ -59,6 +59,8 @@ function buildSandboxBootstrapDocument(pluginId) {
   var headerOnClick = null;
   var gardenRenderFn = null;
   var gardenRelay = null;
+  var lastGardenPosition = 'top';
+  var gardenClickMethod = null;
 
   function buildContext() {
     return {
@@ -80,18 +82,57 @@ function buildSandboxBootstrapDocument(pluginId) {
         registerGardenWidget: function (config) {
           gardenRenderFn = config && config.render;
           var position = (config && config.position) || 'top';
+          lastGardenPosition = position;
+          gardenClickMethod = config && config.onTapMethod ? String(config.onTapMethod) : null;
           gardenRelay = { id: '', className: '' };
-          gardenRelay.appendChild = function () {
-            console.warn('[PluginSandbox] appendChild is not supported; use innerHTML.');
+          gardenRelay.appendChild = function (node) {
+            if (node && typeof node.outerHTML === 'string') {
+              send({
+                type: 'GARDEN_HTML',
+                position: position,
+                html: node.outerHTML,
+                gardenClickMethod: gardenClickMethod
+              });
+            } else {
+              console.warn('[PluginSandbox] appendChild expects a DOM node with outerHTML; use innerHTML on the relay.');
+            }
           };
           Object.defineProperty(gardenRelay, 'innerHTML', {
             configurable: true,
             get: function () { return ''; },
             set: function (html) {
-              send({ type: 'GARDEN_HTML', position: position, html: String(html) });
+              send({
+                type: 'GARDEN_HTML',
+                position: position,
+                html: String(html),
+                gardenClickMethod: gardenClickMethod
+              });
             }
           });
           send({ type: 'GARDEN_REGISTER', position: position });
+        },
+        updateGardenHtml: function (html) {
+          send({
+            type: 'GARDEN_HTML',
+            position: lastGardenPosition,
+            html: String(html),
+            gardenClickMethod: gardenClickMethod
+          });
+        },
+        openMainSheet: function (html) {
+          send({ type: 'UI_MAIN_SHEET', html: String(html) });
+        },
+        closeMainSheet: function () {
+          send({ type: 'UI_CLOSE_MAIN_SHEET' });
+        },
+        updateMainHeader: function (opts) {
+          opts = opts || {};
+          send({
+            type: 'UI_UPDATE_HEADER',
+            label: opts.label === undefined ? null : opts.label,
+            icon: opts.icon === undefined ? null : opts.icon,
+            labelColor: opts.labelColor === undefined ? null : opts.labelColor
+          });
         },
         showNotification: function (icon, text) {
           return rpc('ui.showNotification', [icon != null ? icon : '\\uD83D\\uDD0C', text != null ? String(text) : '']);
@@ -152,6 +193,14 @@ function buildSandboxBootstrapDocument(pluginId) {
       }
       return;
     }
+    if (d.type === 'MODAL_ACTION') {
+      if (pluginInstance && typeof pluginInstance.onModalAction === 'function') {
+        Promise.resolve(pluginInstance.onModalAction(d.action, d.payload || null)).catch(function (e) {
+          console.error('[PluginSandbox] onModalAction error', d.action, e);
+        });
+      }
+      return;
+    }
     if (d.type === 'RUN_GARDEN_RENDER') {
       if (gardenRelay && gardenRenderFn && typeof gardenRenderFn === 'function') {
         try {
@@ -182,11 +231,26 @@ function buildSandboxBootstrapDocument(pluginId) {
     }
 
     function sendReady() {
+      var methods = [];
+      if (pluginInstance) {
+        var seen = Object.create(null);
+        var cur = pluginInstance;
+        while (cur && cur !== Object.prototype) {
+          Object.getOwnPropertyNames(cur).forEach(function (k) {
+            if (k === 'constructor' || seen[k]) return;
+            try {
+              if (typeof pluginInstance[k] === 'function') {
+                seen[k] = true;
+              }
+            } catch (e) {}
+          });
+          cur = Object.getPrototypeOf(cur);
+        }
+        methods = Object.keys(seen);
+      }
       send({
         type: 'SANDBOX_READY',
-        methods: pluginInstance
-          ? Object.keys(pluginInstance).filter(function (k) { return typeof pluginInstance[k] === 'function'; })
-          : []
+        methods: methods
       });
     }
 
@@ -233,6 +297,9 @@ export class PluginSandboxHost {
       onUiRegisterHeader: null,
       onGardenRegister: null,
       onGardenHtml: null,
+      onUiMainSheet: null,
+      onUiCloseMainSheet: null,
+      onUiUpdateHeader: null,
       onReady: null,
       onError: null
     };
@@ -309,6 +376,27 @@ export class PluginSandboxHost {
     if (d.type === 'GARDEN_HTML') {
       if (this._handlers.onGardenHtml) {
         this._handlers.onGardenHtml(d);
+      }
+      return;
+    }
+
+    if (d.type === 'UI_MAIN_SHEET') {
+      if (this._handlers.onUiMainSheet) {
+        this._handlers.onUiMainSheet(d);
+      }
+      return;
+    }
+
+    if (d.type === 'UI_CLOSE_MAIN_SHEET') {
+      if (this._handlers.onUiCloseMainSheet) {
+        this._handlers.onUiCloseMainSheet();
+      }
+      return;
+    }
+
+    if (d.type === 'UI_UPDATE_HEADER') {
+      if (this._handlers.onUiUpdateHeader) {
+        this._handlers.onUiUpdateHeader(d);
       }
       return;
     }
@@ -423,6 +511,15 @@ export class PluginSandboxHost {
     if (this._loadTimeout) {
       clearTimeout(this._loadTimeout);
       this._loadTimeout = null;
+    }
+    try {
+      document.querySelectorAll('[data-cultiva-plugin-sheet]').forEach((el) => {
+        if (el.getAttribute('data-cultiva-plugin-sheet') === this.pluginId) {
+          el.remove();
+        }
+      });
+    } catch {
+      /* ignore */
     }
     window.removeEventListener('message', this._onMessage);
     if (this.iframe) {

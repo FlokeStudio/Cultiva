@@ -76,6 +76,26 @@ function takePluginLoadFailure() {
   return m;
 }
 
+/** Resolve which modal opener exists on the plugin instance (header click wiring). */
+function resolveHeaderModalMethod(instance) {
+  if (!instance) {
+    return null;
+  }
+  if (typeof instance.openWeatherModal === 'function') {
+    return 'openWeatherModal';
+  }
+  if (typeof instance.openSettingsModal === 'function') {
+    return 'openSettingsModal';
+  }
+  if (typeof instance.openRadioModal === 'function') {
+    return 'openRadioModal';
+  }
+  if (typeof instance.openModal === 'function') {
+    return 'openModal';
+  }
+  return null;
+}
+
 /** @type {Record<string, string[]>} hookName -> pluginIds that subscribed (deduped) */
 const pluginHooks = {
   onHabitComplete: [],
@@ -97,6 +117,154 @@ function _syncHookList(hookName, pluginId) {
     return;
   }
   list.push(pluginId);
+}
+
+function _escapeSelectorSegment(id) {
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+    return CSS.escape(id);
+  }
+  return String(id).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function _closePluginMainSheet(pluginId) {
+  document.querySelectorAll('[data-cultiva-plugin-sheet]').forEach((el) => {
+    if (el.getAttribute('data-cultiva-plugin-sheet') !== pluginId) {
+      return;
+    }
+    const kh = el._cultivaSheetKeyHandler;
+    if (typeof kh === 'function') {
+      document.removeEventListener('keydown', kh);
+    }
+    el.remove();
+  });
+}
+
+function _readCultivaPayloadFromEl(t) {
+  const raw = t.getAttribute('data-cultiva-payload');
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function _readDatasetGeoPayload(t) {
+  const p = {};
+  if (t.dataset.lat != null && t.dataset.lat !== '') {
+    p.lat = parseFloat(t.dataset.lat);
+  }
+  if (t.dataset.lon != null && t.dataset.lon !== '') {
+    p.lon = parseFloat(t.dataset.lon);
+  }
+  if (t.dataset.city != null) {
+    p.city = t.dataset.city;
+  }
+  return p;
+}
+
+function _mountPluginMainSheet(pluginId, html) {
+  _closePluginMainSheet(pluginId);
+  const wrap = document.createElement('div');
+  wrap.setAttribute('data-cultiva-plugin-sheet', pluginId);
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.className = 'cultiva-plugin-sheet-root';
+  wrap.innerHTML = String(html || '');
+  document.body.appendChild(wrap);
+
+  const sandbox = plugins.get(pluginId)?.sandbox;
+  if (!sandbox) {
+    return;
+  }
+
+  const forward = (action, payload) => {
+    sandbox.postToSandbox({
+      type: 'MODAL_ACTION',
+      action,
+      payload: payload === undefined ? null : payload
+    });
+  };
+
+  wrap.addEventListener('click', (e) => {
+    const closeHit = e.target.closest('[data-cultiva-act="close"]');
+    if (closeHit) {
+      _closePluginMainSheet(pluginId);
+      return;
+    }
+    const t = e.target.closest('[data-cultiva-act]');
+    if (!t) {
+      return;
+    }
+    const act = t.getAttribute('data-cultiva-act');
+    if (act === 'close') {
+      _closePluginMainSheet(pluginId);
+      return;
+    }
+    let payload = { ..._readDatasetGeoPayload(t), ...(_readCultivaPayloadFromEl(t) || {}) };
+    if (t.dataset.tz) {
+      payload.tz = t.dataset.tz;
+    }
+    if (t.dataset.station) {
+      payload.stationId = t.dataset.station;
+    }
+    if (t.dataset.minutes != null && t.dataset.minutes !== '') {
+      const m = parseInt(t.dataset.minutes, 10);
+      if (!Number.isNaN(m)) {
+        payload.minutes = m;
+      }
+    }
+    if (t.getAttribute('data-cultiva-collect') === '1') {
+      const root = t.closest('.cultiva-sheet-card') || wrap;
+      const formPayload = {};
+      root.querySelectorAll('[name]').forEach((el) => {
+        if (!el.name) {
+          return;
+        }
+        if (el.type === 'checkbox') {
+          formPayload[el.name] = el.checked;
+        } else if (el.type === 'radio') {
+          if (el.checked) {
+            formPayload[el.name] = el.value;
+          }
+        } else {
+          formPayload[el.name] = el.value;
+        }
+      });
+      payload = { ...formPayload, ...payload };
+    }
+    forward(act, payload);
+  });
+
+  wrap.addEventListener('change', (e) => {
+    const t = e.target.closest('[data-cultiva-change-act]');
+    if (!t) {
+      return;
+    }
+    const act = t.getAttribute('data-cultiva-change-act');
+    const payload = { ..._readDatasetGeoPayload(t), value: t.value };
+    forward(act, payload);
+  });
+
+  wrap.addEventListener('input', (e) => {
+    const t = e.target.closest('[data-cultiva-input-act]');
+    if (!t) {
+      return;
+    }
+    const act = t.getAttribute('data-cultiva-input-act');
+    forward('input:' + act, { value: t.value });
+  });
+
+  const onKey = (e) => {
+    if (e.key === 'Escape') {
+      _closePluginMainSheet(pluginId);
+      document.removeEventListener('keydown', onKey);
+    }
+  };
+  wrap._cultivaSheetKeyHandler = onKey;
+  document.addEventListener('keydown', onKey);
 }
 
 function _wireSandboxHost(host, pluginId, manifest) {
@@ -156,6 +324,71 @@ function _wireSandboxHost(host, pluginId, manifest) {
     wrap.id = `${pluginId}-garden-widget`;
     wrap.innerHTML = data.html;
     container.appendChild(wrap);
+    const method = typeof data.gardenClickMethod === 'string' ? data.gardenClickMethod : null;
+    if (method) {
+      wrap.addEventListener('click', () => {
+        const p = plugins.get(pluginId);
+        if (p?.instance && typeof p.instance[method] === 'function') {
+          p.instance[method]();
+        }
+      });
+    }
+  });
+
+  host.setHandler('onUiMainSheet', (data) => {
+    _mountPluginMainSheet(pluginId, data.html);
+  });
+
+  host.setHandler('onUiCloseMainSheet', () => {
+    _closePluginMainSheet(pluginId);
+  });
+
+  host.setHandler('onUiUpdateHeader', (data) => {
+    const plugin = plugins.get(pluginId);
+    if (plugin?.headerItem) {
+      if (data.label !== null && data.label !== undefined) {
+        plugin.headerItem.label = data.label;
+      }
+      if (data.icon !== null && data.icon !== undefined) {
+        plugin.headerItem.icon = data.icon;
+      }
+      if (data.labelColor !== null && data.labelColor !== undefined) {
+        plugin.headerItem.labelColor = data.labelColor;
+      }
+    }
+    const el = document.querySelector(
+      `.header-plugin-item[data-plugin-id="${_escapeSelectorSegment(pluginId)}"]`
+    );
+    if (!el) {
+      if (plugin) {
+        const prev = plugin._pendingHeaderUi || {};
+        plugin._pendingHeaderUi = { ...prev };
+        if (data.label !== null && data.label !== undefined) {
+          plugin._pendingHeaderUi.label = data.label;
+        }
+        if (data.icon !== null && data.icon !== undefined) {
+          plugin._pendingHeaderUi.icon = data.icon;
+        }
+        if (data.labelColor !== null && data.labelColor !== undefined) {
+          plugin._pendingHeaderUi.labelColor = data.labelColor;
+        }
+      }
+      return;
+    }
+    const iconEl = el.querySelector('.header-plugin-icon');
+    const labelEl = el.querySelector('.header-plugin-label');
+    if (iconEl && data.icon !== null && data.icon !== undefined) {
+      iconEl.textContent = data.icon;
+    }
+    if (labelEl && data.label !== null && data.label !== undefined) {
+      labelEl.textContent = data.label;
+    }
+    if (labelEl && data.labelColor !== null && data.labelColor !== undefined) {
+      labelEl.style.color = data.labelColor || '';
+    }
+    if (plugin?.headerItem && data.labelColor !== null && data.labelColor !== undefined) {
+      plugin.headerItem.labelColor = data.labelColor;
+    }
   });
 }
 
@@ -291,25 +524,46 @@ export const pluginManager = {
       const sandboxHost = new PluginSandboxHost(pluginId, manifest);
       _wireSandboxHost(sandboxHost, pluginId, manifest);
 
+      // Register before sandbox load: onEnable may post UI_REGISTER_HEADER / GARDEN_REGISTER
+      // before SANDBOX_READY; handlers use plugins.get(pluginId) and must not no-op.
+      plugins.set(pluginId, {
+        id: pluginId,
+        manifest,
+        sandbox: sandboxHost,
+        instance: null,
+        enabled: true,
+        headerItem: null,
+        gardenWidget: null
+      });
+
       let loadResult;
       try {
         loadResult = await sandboxHost.load(pluginCode);
       } catch (e) {
         console.error('[PluginManager] Sandbox failed:', pluginId, e);
         sandboxHost.destroy();
+        plugins.delete(pluginId);
         notePluginLoadFailure(e && e.message ? e.message : String(e));
         return false;
       }
 
       const instanceProxy = loadResult.instanceProxy;
 
+      const existing = plugins.get(pluginId);
       plugins.set(pluginId, {
+        ...existing,
         id: pluginId,
         manifest,
         sandbox: sandboxHost,
         instance: instanceProxy,
         enabled: true
       });
+
+      const pluginAfterLoad = plugins.get(pluginId);
+      if (pluginAfterLoad?.headerItem) {
+        pluginAfterLoad.headerItem.instance = instanceProxy;
+        pluginAfterLoad.headerItem.modalMethod = resolveHeaderModalMethod(instanceProxy);
+      }
 
       try {
         await this._injectPluginStyles(pluginId, manifest);
@@ -355,22 +609,13 @@ export const pluginManager = {
     }
 
     const instance = plugin.instance;
-    let modalMethod = null;
-
-    if (instance && typeof instance.openWeatherModal === 'function') {
-      modalMethod = 'openWeatherModal';
-    } else if (instance && typeof instance.openSettingsModal === 'function') {
-      modalMethod = 'openSettingsModal';
-    } else if (instance && typeof instance.openRadioModal === 'function') {
-      modalMethod = 'openRadioModal';
-    } else if (instance && typeof instance.openModal === 'function') {
-      modalMethod = 'openModal';
-    }
+    const modalMethod = resolveHeaderModalMethod(instance);
 
     plugin.headerItem = {
       id: `${pluginId}-header`,
-      label: data.label || plugin.manifest.name,
-      icon: data.icon || plugin.manifest.icon || '🔌',
+      label: typeof data.label === 'string' ? data.label : plugin.manifest.name,
+      icon: typeof data.icon === 'string' ? data.icon : (plugin.manifest.icon || '🔌'),
+      labelColor: undefined,
       instance,
       modalMethod,
       onClick: data.hasOnClick ? () => plugin.sandbox.invokeHeaderOnClick() : null
