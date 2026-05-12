@@ -4,23 +4,30 @@
  * so the plugin cannot access window.electron or other privileged APIs.
  *
  * Parent ↔ iframe protocol: postMessage with __cultivaPlugin: true and targetPluginId.
+ *
+ * Plugin source is injected via postMessage (INIT_PLUGIN) after a tiny bootstrap document
+ * loads, so large files and accidental `</script>`-like sequences in plugin text cannot
+ * break HTML parsing of the blob document.
  */
 
 const RPC_METHODS = new Set(['storage.get', 'storage.set', 'ui.showNotification']);
 
-function buildSandboxDocument(pluginId, manifest, pluginCode) {
+/**
+ * Minimal HTML/JS — no embedded plugin body. Parent sends { type: 'INIT_PLUGIN', manifest, pluginCode }.
+ * @param {string} pluginId
+ */
+function buildSandboxBootstrapDocument(pluginId) {
   const mid = JSON.stringify(pluginId);
-  const man = JSON.stringify(manifest);
-  const code = JSON.stringify(pluginCode);
-
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head><body>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src https: http:;">
+</head><body>
 <script>
 (function () {
   'use strict';
   var PLUGIN_ID = ${mid};
-  var manifest = ${man};
-  var PLUGIN_CODE = ${code};
+  var manifest = null;
+  var PLUGIN_CODE = null;
 
   var pendingRpc = new Map();
   var rpcId = 0;
@@ -53,48 +60,62 @@ function buildSandboxDocument(pluginId, manifest, pluginCode) {
   var gardenRenderFn = null;
   var gardenRelay = null;
 
-  var context = {
-    manifest: manifest,
-    storage: {
-      get: function (key) { return rpc('storage.get', [key]); },
-      set: function (key, value) { return rpc('storage.set', [key, value]); }
-    },
-    ui: {
-      registerHeaderItem: function (config) {
-        headerOnClick = config && config.onClick;
-        send({
-          type: 'UI_REGISTER_HEADER',
-          label: config && config.label,
-          icon: config && config.icon,
-          hasOnClick: typeof (config && config.onClick) === 'function'
-        });
+  function buildContext() {
+    return {
+      manifest: manifest,
+      storage: {
+        get: function (key) { return rpc('storage.get', [key]); },
+        set: function (key, value) { return rpc('storage.set', [key, value]); }
       },
-      registerGardenWidget: function (config) {
-        gardenRenderFn = config && config.render;
-        var position = (config && config.position) || 'top';
-        gardenRelay = { id: '', className: '' };
-        gardenRelay.appendChild = function () {
-          console.warn('[PluginSandbox] appendChild is not supported; use innerHTML.');
-        };
-        Object.defineProperty(gardenRelay, 'innerHTML', {
-          configurable: true,
-          get: function () { return ''; },
-          set: function (html) {
-            send({ type: 'GARDEN_HTML', position: position, html: String(html) });
-          }
-        });
-        send({ type: 'GARDEN_REGISTER', position: position });
-      },
-      showNotification: function (icon, text) {
-        return rpc('ui.showNotification', [icon != null ? icon : '\\uD83D\\uDD0C', text != null ? String(text) : '']);
+      ui: {
+        registerHeaderItem: function (config) {
+          headerOnClick = config && config.onClick;
+          send({
+            type: 'UI_REGISTER_HEADER',
+            label: config && config.label,
+            icon: config && config.icon,
+            hasOnClick: typeof (config && config.onClick) === 'function'
+          });
+        },
+        registerGardenWidget: function (config) {
+          gardenRenderFn = config && config.render;
+          var position = (config && config.position) || 'top';
+          gardenRelay = { id: '', className: '' };
+          gardenRelay.appendChild = function () {
+            console.warn('[PluginSandbox] appendChild is not supported; use innerHTML.');
+          };
+          Object.defineProperty(gardenRelay, 'innerHTML', {
+            configurable: true,
+            get: function () { return ''; },
+            set: function (html) {
+              send({ type: 'GARDEN_HTML', position: position, html: String(html) });
+            }
+          });
+          send({ type: 'GARDEN_REGISTER', position: position });
+        },
+        showNotification: function (icon, text) {
+          return rpc('ui.showNotification', [icon != null ? icon : '\\uD83D\\uDD0C', text != null ? String(text) : '']);
+        }
       }
-    }
-  };
+    };
+  }
 
   window.addEventListener('message', function (ev) {
     if (ev.source !== window.parent) return;
     var d = ev.data;
     if (!d || d.targetPluginId !== PLUGIN_ID) return;
+
+    if (d.type === 'INIT_PLUGIN') {
+      if (PLUGIN_CODE != null) return;
+      manifest = d.manifest;
+      PLUGIN_CODE = d.pluginCode;
+      if (typeof PLUGIN_CODE !== 'string' || !manifest) {
+        send({ type: 'SANDBOX_ERROR', error: 'Invalid INIT_PLUGIN payload' });
+        return;
+      }
+      runPlugin();
+      return;
+    }
 
     if (d.type === 'RPC_RESULT') {
       var p = pendingRpc.get(d.id);
@@ -151,7 +172,8 @@ function buildSandboxDocument(pluginId, manifest, pluginCode) {
     }
   });
 
-  function run() {
+  function runPlugin() {
+    var context = buildContext();
     try {
       pluginInstance = new Function('context', 'hooks', PLUGIN_CODE)(context, hooks);
     } catch (e) {
@@ -179,9 +201,9 @@ function buildSandboxDocument(pluginId, manifest, pluginCode) {
     }
   }
 
-  run();
+  send({ type: 'SANDBOX_AWAIT_INIT' });
 })();
-</script>
+\x3c/script>
 </body></html>`;
 }
 
@@ -199,6 +221,7 @@ export class PluginSandboxHost {
     this.manifest = manifest;
     this.iframe = null;
     this._blobUrl = null;
+    this._pendingPluginCode = null;
     this._onMessage = this._onMessage.bind(this);
     this._loadResolve = null;
     this._loadReject = null;
@@ -225,6 +248,22 @@ export class PluginSandboxHost {
     }
     const d = ev.data;
     if (!d || d.__cultivaPlugin !== true || d.targetPluginId !== this.pluginId) {
+      return;
+    }
+
+    if (d.type === 'SANDBOX_AWAIT_INIT') {
+      const w = this.iframe.contentWindow;
+      if (w && typeof this._pendingPluginCode === 'string') {
+        w.postMessage(
+          {
+            targetPluginId: this.pluginId,
+            type: 'INIT_PLUGIN',
+            manifest: this.manifest,
+            pluginCode: this._pendingPluginCode
+          },
+          '*'
+        );
+      }
       return;
     }
 
@@ -352,11 +391,12 @@ export class PluginSandboxHost {
    */
   load(pluginCode) {
     return new Promise((resolve, reject) => {
+      this._pendingPluginCode = pluginCode;
       this._loadResolve = resolve;
       this._loadReject = reject;
       window.addEventListener('message', this._onMessage);
 
-      const html = buildSandboxDocument(this.pluginId, this.manifest, pluginCode);
+      const html = buildSandboxBootstrapDocument(this.pluginId);
       const blob = new Blob([html], { type: 'text/html' });
       this._blobUrl = URL.createObjectURL(blob);
 
@@ -393,6 +433,7 @@ export class PluginSandboxHost {
       URL.revokeObjectURL(this._blobUrl);
       this._blobUrl = null;
     }
+    this._pendingPluginCode = null;
     this._loadResolve = null;
     this._loadReject = null;
     this._registeredHooks.clear();

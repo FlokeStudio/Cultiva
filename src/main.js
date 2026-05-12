@@ -6,6 +6,7 @@ import { storage } from './modules/storage.js';
 import { BRANDING } from './core/branding.js';
 import { habits } from './modules/habits.js';
 import { pluginManager } from './core/plugin-manager.js';
+import { initNativeNotificationsScheduler } from './core/native-notifications.js';
 import { getCultivaTimezone, getTodayInTZ, getDateInTZ } from './core/timezone.js';
 import { getThemeBodyClassList, resolveThemeBodyId } from './core/theme-config.js';
 import {
@@ -25,7 +26,12 @@ const settings = {
   focusMode: false,
   holidayRegion: 'us',
   avatar: { background: 'green', emoji: '🌱' },
-  pluginsEnabled: true
+  pluginsEnabled: true,
+  nativeNotifyEnabled: true,
+  nativeNotifyHabits: true,
+  nativeNotifyHabitsHour: 9,
+  nativeNotifyCalendar: true,
+  nativeNotifyCalendarLeadMinutes: 30
 };
 
 /* ============================================ */
@@ -217,6 +223,17 @@ async function loadSettings() {
       if (saved.holidayRegion) { settings.holidayRegion = saved.holidayRegion; }
       if (saved.avatar) { settings.avatar = { ...settings.avatar, ...saved.avatar }; }
       if (typeof saved.pluginsEnabled === 'boolean') { settings.pluginsEnabled = saved.pluginsEnabled; }
+      if (typeof saved.nativeNotifyEnabled === 'boolean') { settings.nativeNotifyEnabled = saved.nativeNotifyEnabled; }
+      if (typeof saved.nativeNotifyHabits === 'boolean') { settings.nativeNotifyHabits = saved.nativeNotifyHabits; }
+      if (saved.nativeNotifyHabitsHour !== undefined && saved.nativeNotifyHabitsHour !== null) {
+        const h = parseInt(String(saved.nativeNotifyHabitsHour), 10);
+        if (!Number.isNaN(h)) { settings.nativeNotifyHabitsHour = Math.max(0, Math.min(23, h)); }
+      }
+      if (typeof saved.nativeNotifyCalendar === 'boolean') { settings.nativeNotifyCalendar = saved.nativeNotifyCalendar; }
+      if (saved.nativeNotifyCalendarLeadMinutes !== undefined && saved.nativeNotifyCalendarLeadMinutes !== null) {
+        const m = parseInt(String(saved.nativeNotifyCalendarLeadMinutes), 10);
+        if (!Number.isNaN(m)) { settings.nativeNotifyCalendarLeadMinutes = Math.max(5, Math.min(120, m)); }
+      }
     }
     
     currentLang = settings.lang;
@@ -229,6 +246,29 @@ async function loadSettings() {
 }
 
 
+
+function refreshNativeNotificationControlsState() {
+  const masterOn = settings.nativeNotifyEnabled !== false;
+  ['toggle-native-notify-habits', 'toggle-native-notify-calendar'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = !masterOn;
+    }
+  });
+  ['native-notify-habits-hour', 'native-notify-calendar-lead'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = !masterOn;
+    }
+  });
+}
+
+function updateNotificationsDesktopBanner() {
+  const b = document.getElementById('notifications-desktop-banner');
+  if (b) {
+    b.style.display = window.electron?.showNativeNotification ? 'none' : 'flex';
+  }
+}
 
  
 function saveSettings() {
@@ -283,6 +323,26 @@ function applySettings() {
   
   const pluginsToggle = document.getElementById('toggle-plugins');
   if (pluginsToggle) { pluginsToggle.checked = settings.pluginsEnabled; }
+
+  const toggleNativeMaster = document.getElementById('toggle-native-notify-master');
+  if (toggleNativeMaster) { toggleNativeMaster.checked = settings.nativeNotifyEnabled !== false; }
+
+  const toggleNativeHabits = document.getElementById('toggle-native-notify-habits');
+  if (toggleNativeHabits) { toggleNativeHabits.checked = settings.nativeNotifyHabits !== false; }
+  const nativeHabitsHour = document.getElementById('native-notify-habits-hour');
+  if (nativeHabitsHour) {
+    nativeHabitsHour.value = String(Math.max(0, Math.min(23, settings.nativeNotifyHabitsHour ?? 9)));
+  }
+  const toggleNativeCal = document.getElementById('toggle-native-notify-calendar');
+  if (toggleNativeCal) { toggleNativeCal.checked = settings.nativeNotifyCalendar !== false; }
+  const nativeCalLead = document.getElementById('native-notify-calendar-lead');
+  if (nativeCalLead) {
+    const lm = Math.max(5, Math.min(120, settings.nativeNotifyCalendarLeadMinutes ?? 30));
+    nativeCalLead.value = String([5, 10, 15, 30, 45, 60, 90, 120].includes(lm) ? lm : 30);
+  }
+
+  refreshNativeNotificationControlsState();
+  updateNotificationsDesktopBanner();
   
   renderHeaderAvatar();
   
@@ -400,6 +460,39 @@ if (timeFormatSelect) {
     localStorage.setItem('cultiva-time-format', e.target.value);
   });
 }
+
+const nativeHabitsHourSelect = document.getElementById('native-notify-habits-hour');
+if (nativeHabitsHourSelect && nativeHabitsHourSelect.options.length === 0) {
+  for (let h = 0; h < 24; h += 1) {
+    const o = document.createElement('option');
+    o.value = String(h);
+    o.textContent = `${String(h).padStart(2, '0')}:00`;
+    nativeHabitsHourSelect.appendChild(o);
+  }
+}
+
+document.getElementById('toggle-native-notify-habits')?.addEventListener('change', (e) => {
+  settings.nativeNotifyHabits = e.target.checked;
+  saveSettings();
+});
+nativeHabitsHourSelect?.addEventListener('change', (e) => {
+  const h = parseInt(e.target.value, 10);
+  settings.nativeNotifyHabitsHour = Number.isNaN(h) ? 9 : Math.max(0, Math.min(23, h));
+  saveSettings();
+});
+document.getElementById('toggle-native-notify-calendar')?.addEventListener('change', (e) => {
+  settings.nativeNotifyCalendar = e.target.checked;
+  saveSettings();
+});
+document.getElementById('native-notify-calendar-lead')?.addEventListener('change', (e) => {
+  const m = parseInt(e.target.value, 10);
+  settings.nativeNotifyCalendarLeadMinutes = Number.isNaN(m) ? 30 : Math.max(5, Math.min(120, m));
+  saveSettings();
+});
+document.getElementById('toggle-native-notify-master')?.addEventListener('change', (e) => {
+  settings.nativeNotifyEnabled = e.target.checked;
+  saveSettings();
+});
 
 function updateCultivaDatePreview() {
   const preview = document.getElementById('cultiva-date-preview');
@@ -544,6 +637,7 @@ function initSettingsNavigation() {
             
       if (section === 'profile') { updateProfileSection(); }
       if (section === 'plugins') { renderPluginsSection(); }
+      if (section === 'notifications') { updateNotificationsDesktopBanner(); }
     });
   });
     
@@ -612,7 +706,7 @@ async function loadInstalledPlugins() {
     return;
   }
 
-  const plugins = pluginManager.getInstalledPlugins();
+  const plugins = await pluginManager.getInstalledPluginsForUI();
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   container.replaceChildren();
@@ -643,13 +737,16 @@ async function loadInstalledPlugins() {
 
     const descEl = document.createElement('div');
     descEl.className = 'plugin-description';
-    descEl.textContent = p.description || '';
+    const baseDesc = p.description || '';
+    descEl.textContent = p.loaded
+      ? baseDesc
+      : `${baseDesc ? `${baseDesc} — ` : ''}${t.pluginNotLoadedHint || 'Not loaded.'}`;
 
     const meta = document.createElement('div');
     meta.className = 'plugin-meta';
     const ver = document.createElement('span');
     ver.className = 'plugin-version';
-    ver.textContent = `v${p.version || ''}`;
+    ver.textContent = p.version ? `v${p.version}` : '';
     meta.appendChild(ver);
 
     info.appendChild(nameEl);
@@ -664,6 +761,7 @@ async function loadInstalledPlugins() {
     btnSettings.className = 'plugin-btn plugin-btn-settings';
     btnSettings.title = t.pluginSettings;
     btnSettings.textContent = '⚙️';
+    btnSettings.disabled = !p.loaded;
     btnSettings.addEventListener('click', () => window.openPluginSettings(p.id));
 
     const btnUninstall = document.createElement('button');
@@ -699,11 +797,10 @@ async function loadAvailablePlugins() {
 
   try {
     const plugins = await pluginManager.getAvailablePlugins();
-    const available = plugins.filter((p) => !p.installed);
 
     container.replaceChildren();
 
-    if (available.length === 0) {
+    if (plugins.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'plugins-empty';
       empty.dataset.i18n = 'noPluginsAvailable';
@@ -712,7 +809,7 @@ async function loadAvailablePlugins() {
       return;
     }
 
-    for (const p of available) {
+    for (const p of plugins) {
       const card = document.createElement('div');
       card.className = 'plugin-card';
 
@@ -750,10 +847,22 @@ async function loadAvailablePlugins() {
       actions.className = 'plugin-actions';
       const btnInstall = document.createElement('button');
       btnInstall.type = 'button';
-      btnInstall.className = 'plugin-btn plugin-btn-install';
-      btnInstall.textContent = t.install;
       const pid = p.id;
-      btnInstall.addEventListener('click', () => window.installPlugin(pid));
+      const canInstall = Boolean(typeof window !== 'undefined' && window.electron?.installPlugin);
+      if (p.installed) {
+        btnInstall.className = 'plugin-btn plugin-btn-installed';
+        btnInstall.disabled = true;
+        btnInstall.textContent = t.pluginInstalledButton || 'Installed';
+      } else if (!canInstall) {
+        btnInstall.className = 'plugin-btn plugin-btn-installed';
+        btnInstall.disabled = true;
+        btnInstall.textContent = t.install;
+        btnInstall.title = t.pluginInstallDesktopOnly || '';
+      } else {
+        btnInstall.className = 'plugin-btn plugin-btn-install';
+        btnInstall.textContent = t.install;
+        btnInstall.addEventListener('click', () => window.installPlugin(pid));
+      }
       actions.appendChild(btnInstall);
 
       card.appendChild(iconWrap);
@@ -2063,6 +2172,8 @@ async function init() {
     updateProfileSection();
     
     renderPluginHeaderItems();
+
+    initNativeNotificationsScheduler(() => settings);
     
     console.log(`[App] Cultiva [${BRANDING.VERSION}] initialized successfully`);
   } catch (err) {

@@ -49,11 +49,33 @@ async function fetchPluginHttpText(url) {
 }
 
 async function getInstalledPluginIdsNormalized() {
-  const raw = await storage.get('cultiva-installed-plugins');
-  return Array.isArray(raw) ? raw : [];
+  let raw = await storage.get('cultiva-installed-plugins');
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      raw = null;
+    }
+  }
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw.map((x) => String(x).trim()).filter(Boolean);
 }
 
 const plugins = new Map();
+
+/** Set when loadPlugin returns false so installPlugin can show a specific reason. */
+let _lastPluginLoadFailure = null;
+function notePluginLoadFailure(message) {
+  _lastPluginLoadFailure = message ? String(message) : null;
+}
+function takePluginLoadFailure() {
+  const m = _lastPluginLoadFailure;
+  _lastPluginLoadFailure = null;
+  return m;
+}
+
 /** @type {Record<string, string[]>} hookName -> pluginIds that subscribed (deduped) */
 const pluginHooks = {
   onHabitComplete: [],
@@ -158,13 +180,28 @@ export const pluginManager = {
 
     await storage.init();
 
-    const installed = await getInstalledPluginIdsNormalized();
-    console.log('[PluginManager] Installed plugins:', installed);
+    const installedIds = await getInstalledPluginIdsNormalized();
+    console.log('[PluginManager] Installed plugins:', installedIds);
 
-    for (const pluginId of installed) {
+    const failedIds = [];
+    for (const pluginId of installedIds) {
       console.log('[PluginManager] Loading plugin:', pluginId);
       const success = await this.loadPlugin(pluginId);
       console.log('[PluginManager] Load result for', pluginId, ':', success);
+      if (!success) {
+        failedIds.push(pluginId);
+      }
+    }
+
+    if (failedIds.length) {
+      const next = installedIds.filter((id) => !failedIds.includes(id));
+      await storage.set('cultiva-installed-plugins', next);
+      try {
+        localStorage.setItem('cultiva-installed-plugins', JSON.stringify(next));
+      } catch {
+        /* ignore quota */
+      }
+      console.warn('[PluginManager] Removed unloadable plugin ids from install list:', failedIds);
     }
 
     await this.triggerHook('onAppStart');
@@ -207,11 +244,13 @@ export const pluginManager = {
   },
 
   async loadPlugin(pluginId) {
+    notePluginLoadFailure(null);
     try {
       console.log('[PluginManager] Loading plugin from disk:', pluginId);
 
       if (!window.electron?.readPluginFile) {
         console.warn('[PluginManager] Plugin files API unavailable (not running in Electron?)');
+        notePluginLoadFailure('readPluginFile API missing');
         return false;
       }
 
@@ -219,6 +258,7 @@ export const pluginManager = {
 
       if (!manifestJson) {
         console.warn('[PluginManager] Plugin manifest not found:', pluginId);
+        notePluginLoadFailure('manifest.json missing on disk');
         return false;
       }
 
@@ -229,14 +269,22 @@ export const pluginManager = {
         const appVersion = BRANDING.VERSION;
         if (!this.checkVersion(appVersion, manifest.minAppVersion)) {
           console.warn('[PluginManager] Plugin requires newer app version:', manifest.minAppVersion);
+          notePluginLoadFailure(`app ${appVersion} < required ${manifest.minAppVersion}`);
           return false;
         }
       }
 
-      const pluginCode = await window.electron.readPluginFile(`${pluginId}/${manifest.entry}`);
+      const entryRel =
+        typeof manifest.entry === 'string' && manifest.entry.trim()
+          ? manifest.entry.trim().replace(/^[/\\]+/, '')
+          : 'index.js';
+      manifest.entry = entryRel;
+
+      const pluginCode = await window.electron.readPluginFile(`${pluginId}/${entryRel}`);
 
       if (!pluginCode) {
-        console.warn('[PluginManager] Plugin code not found:', manifest.entry);
+        console.warn('[PluginManager] Plugin code not found:', entryRel);
+        notePluginLoadFailure(`entry file missing: ${entryRel}`);
         return false;
       }
 
@@ -249,6 +297,7 @@ export const pluginManager = {
       } catch (e) {
         console.error('[PluginManager] Sandbox failed:', pluginId, e);
         sandboxHost.destroy();
+        notePluginLoadFailure(e && e.message ? e.message : String(e));
         return false;
       }
 
@@ -290,6 +339,7 @@ export const pluginManager = {
       return true;
     } catch (e) {
       console.error('[PluginManager] Failed to load plugin:', pluginId, e);
+      notePluginLoadFailure(e && e.message ? e.message : String(e));
       return false;
     }
   },
@@ -398,7 +448,9 @@ export const pluginManager = {
 
     const manifestText = await fetchPluginHttpText(`${base}/manifest.json`);
     const manifest = JSON.parse(stripUtf8Bom(manifestText).trim());
-    const entryFile = typeof manifest.entry === 'string' && manifest.entry.trim() ? manifest.entry.trim() : 'index.js';
+    const entryFileRaw =
+      typeof manifest.entry === 'string' && manifest.entry.trim() ? manifest.entry.trim() : 'index.js';
+    const entryFile = entryFileRaw.replace(/^[/\\]+/, '');
 
     const files = [
       { name: 'manifest.json', url: `${base}/manifest.json`, sha256: sh['manifest.json'] },
@@ -416,18 +468,37 @@ export const pluginManager = {
     }
 
     const success = await window.electron.installPlugin(pluginId, files);
-
-    if (success) {
-      const installed = await getInstalledPluginIdsNormalized();
-      if (!installed.includes(pluginId)) {
-        installed.push(pluginId);
-        await storage.set('cultiva-installed-plugins', installed);
-        localStorage.setItem('cultiva-installed-plugins', JSON.stringify(installed));
-      }
-      await this.loadPlugin(pluginId);
+    if (!success) {
+      return false;
     }
 
-    return success;
+    const loadOk = await this.loadPlugin(pluginId);
+    if (!loadOk) {
+      const detail = takePluginLoadFailure();
+      try {
+        await window.electron.uninstallPlugin(pluginId);
+      } catch (e) {
+        console.warn('[PluginManager] Rollback uninstall failed:', e);
+      }
+      const detailSentence = detail ? ` (${detail})` : '';
+      throw new Error(
+        `Plugin files were saved but the plugin did not start.${detailSentence} ` +
+        'Use the desktop app (Electron) for install, or check DevTools console for sandbox errors.'
+      );
+    }
+
+    const installed = await getInstalledPluginIdsNormalized();
+    if (!installed.includes(pluginId)) {
+      installed.push(pluginId);
+      await storage.set('cultiva-installed-plugins', installed);
+      try {
+        localStorage.setItem('cultiva-installed-plugins', JSON.stringify(installed));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    return true;
   },
 
   async uninstallPlugin(pluginId) {
@@ -479,7 +550,9 @@ export const pluginManager = {
     try {
       const registryText = await fetchPluginHttpText(REGISTRY_URL);
       const registry = JSON.parse(stripUtf8Bom(registryText).trim());
-      const list = Array.isArray(registry.plugins) ? registry.plugins : [];
+      const list = (Array.isArray(registry.plugins) ? registry.plugins : []).filter(
+        (p) => p && typeof p.id === 'string' && p.id.trim()
+      );
 
       const installed = await getInstalledPluginIdsNormalized();
 
@@ -500,8 +573,61 @@ export const pluginManager = {
       version: p.manifest.version,
       description: p.manifest.description,
       icon: p.manifest.icon,
-      enabled: p.enabled
+      enabled: p.enabled,
+      loaded: true
     }));
+  },
+
+  /**
+   * All plugin ids marked installed in storage, merged with in-memory state.
+   * Used by Settings so rows appear even when load failed (e.g. browser-only dev).
+   */
+  async getInstalledPluginsForUI() {
+    const ids = await getInstalledPluginIdsNormalized();
+    const rows = [];
+    for (const id of ids) {
+      const p = plugins.get(id);
+      if (p) {
+        rows.push({
+          id: p.id,
+          name: p.manifest.name,
+          version: p.manifest.version,
+          description: p.manifest.description,
+          icon: p.manifest.icon,
+          enabled: p.enabled,
+          loaded: true
+        });
+        continue;
+      }
+      let name = id;
+      let version = '';
+      let description = '';
+      let icon = '⚠️';
+      if (window.electron?.readPluginFile) {
+        try {
+          const mj = await window.electron.readPluginFile(`${id}/manifest.json`);
+          if (mj) {
+            const m = JSON.parse(stripUtf8Bom(mj).trim());
+            name = m.name || id;
+            version = m.version || '';
+            description = m.description || '';
+            icon = m.icon || '🔌';
+          }
+        } catch (e) {
+          console.warn('[PluginManager] Could not read manifest for', id, e);
+        }
+      }
+      rows.push({
+        id,
+        name,
+        version,
+        description,
+        icon,
+        enabled: false,
+        loaded: false
+      });
+    }
+    return rows;
   },
 
   checkVersion(current, required) {

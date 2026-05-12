@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('electron', {
   saveFile: (data, fileName) => ipcRenderer.invoke('save-file', data, fileName),
   isElectron: true,
   readPluginFile: (filePath) => ipcRenderer.invoke('plugin:read-file', filePath),
+  /** @param {{ title?: string, body?: string, silent?: boolean }} payload */
+  showNativeNotification: (payload) => ipcRenderer.invoke('native-notification:show', payload),
   /** Main-process HTTPS GET (allowed GitHub/raw hosts). Use for registry/manifest when renderer fetch is blocked. */
   pluginHttpGet: (url) => ipcRenderer.invoke('plugin:http-get', url),
   installPlugin: (pluginId, files) => ipcRenderer.invoke('plugin:install', pluginId, files),

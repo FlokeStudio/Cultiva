@@ -242,6 +242,10 @@
                         <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
                         <span class="sidebar-label" data-i18n="appearance">Appearance</span>
                     </div>
+                    <div class="settings-sidebar-item" data-section="notifications">
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <span class="sidebar-label" data-i18n="notifications">Notifications</span>
+                    </div>
                     <div class="settings-sidebar-item" data-section="shortcuts">
                         <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
                         <span class="sidebar-label" data-i18n="shortcuts">Keyboard</span>
@@ -261,10 +265,6 @@
                     <div class="settings-sidebar-item" data-section="data">
                         <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
                         <span class="sidebar-label" data-i18n="dataStorage">Data</span>
-                    </div>
-                    <div class="settings-sidebar-item settings-sidebar-disabled" data-section="notifications">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
-                        <span class="sidebar-label" data-i18n="notifications">Notifications</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="updates">
                         <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
@@ -617,6 +617,89 @@
                             </div>
                             <button class="btn-small btn-danger" id="settings-reset" data-i18n="resetBtn">Reset</button>
                         </div>
+                    </div>
+
+                    <!-- NOTIFICATIONS (desktop, Apple-style groups) -->
+                    <div class="settings-section-content" id="section-notifications">
+                        <div class="settings-section-hero notifications-apple-hero">
+                            <div class="settings-section-hero-title" data-i18n="notificationsSectionTitle">Notifications</div>
+                            <p class="settings-section-hero-desc" data-i18n="notificationsSectionDesc">Quiet, timely reminders. Cultiva uses the system notification center — the same channel as Mail and Calendar on Apple platforms.</p>
+                        </div>
+
+                        <div id="notifications-desktop-banner" class="notifications-desktop-banner" style="display: none;" role="status">
+                            <div class="notifications-desktop-banner-icon" aria-hidden="true">💻</div>
+                            <div class="notifications-desktop-banner-text">
+                                <div class="notifications-desktop-banner-title" data-i18n="notificationsDesktopBannerTitle">Desktop app only</div>
+                                <p class="notifications-desktop-banner-desc" data-i18n="notificationsDesktopBannerDesc">Install and run Cultiva for Windows or macOS to receive native reminders. The browser preview cannot show system notifications.</p>
+                            </div>
+                        </div>
+
+                        <div class="settings-group-title-apple" data-i18n="notificationsGroupGeneral">General</div>
+                        <div class="settings-group-card notifications-apple-card">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="nativeNotifyAllow">Allow notifications</span>
+                                    <span class="setting-desc" data-i18n="nativeNotifyAllowDesc">Master switch for habit and calendar reminders.</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-native-notify-master">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group-title-apple" data-i18n="notificationsGroupHabits">Habits</div>
+                        <div class="settings-group-card notifications-apple-card">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="nativeNotifyHabits">Daily summary</span>
+                                    <span class="setting-desc" data-i18n="nativeNotifyHabitsDesc">Once per day if you still have habits to complete.</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-native-notify-habits">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="nativeNotifyHabitsHour">Time</span>
+                                    <span class="setting-desc" data-i18n="nativeNotifyHabitsHourDesc">Uses the timezone set under Calendar.</span>
+                                </div>
+                                <select id="native-notify-habits-hour" class="select-input select-small"></select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group-title-apple" data-i18n="notificationsGroupCalendar">Calendar</div>
+                        <div class="settings-group-card notifications-apple-card">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="nativeNotifyCalendar">Event alerts</span>
+                                    <span class="setting-desc" data-i18n="nativeNotifyCalendarDesc">Heads-up before today’s events from your Cultiva calendar.</span>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-native-notify-calendar">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="nativeNotifyCalendarLead">Advance notice</span>
+                                    <span class="setting-desc" data-i18n="nativeNotifyCalendarLeadDesc">How early to notify before the event starts.</span>
+                                </div>
+                                <select id="native-notify-calendar-lead" class="select-input select-small">
+                                    <option value="5">5 min</option>
+                                    <option value="10">10 min</option>
+                                    <option value="15">15 min</option>
+                                    <option value="30">30 min</option>
+                                    <option value="45">45 min</option>
+                                    <option value="60">60 min</option>
+                                    <option value="90">90 min</option>
+                                    <option value="120">120 min</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <p class="notifications-footnote" data-i18n="notificationsOsFootnote">If alerts do not appear, check Cultiva in System Settings → Notifications (iOS, iPadOS, macOS) or Windows Settings → Notifications.</p>
                     </div>
 
                     <!-- UPDATES SECTION (MODERN) -->

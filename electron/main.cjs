@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, dialog, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, safeStorage, Notification, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const pkg = require('../package.json');
@@ -227,6 +227,59 @@ function setupAutoUpdater() {
 /* WINDOW CREATION                              */
 /* ============================================ */
 
+function resolveAppIconPath() {
+  const packaged = path.join(__dirname, 'app-icon.ico');
+  if (fs.existsSync(packaged)) {
+    return packaged;
+  }
+  const distIco = path.join(__dirname, '../dist/favicon.ico');
+  if (fs.existsSync(distIco)) {
+    return distIco;
+  }
+  return undefined;
+}
+
+/**
+ * Apply CSP on the default session so file:// and all windows (including plugin sandbox) get one policy.
+ * Strips any existing Content-Security-Policy headers to avoid merging with a stricter duplicate.
+ */
+function attachSessionContentSecurityPolicy() {
+  if (attachSessionContentSecurityPolicy._done) {
+    return;
+  }
+  attachSessionContentSecurityPolicy._done = true;
+
+  const cspProduction =
+    "default-src 'self' file: data: blob:; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' file: blob: data:; " +
+    "img-src 'self' data: blob: file: https:; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "connect-src 'self' file: data: blob: https: https://raw.githubusercontent.com https://api.github.com https://github.com https://objects.githubusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
+    "font-src 'self' data:;";
+
+  const cspDev =
+    "default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: blob: http: https: ws: wss:; " +
+    "img-src 'self' data: blob: file: https: http:; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' file: blob: data: http: https:; " +
+    "connect-src 'self' https: http: ws: wss: https://raw.githubusercontent.com https://api.github.com https://github.com https://objects.githubusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
+    "font-src 'self' data:;";
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const useDevCsp = isDev && Boolean(process.env.VITE_DEV_SERVER_URL);
+    const policy = useDevCsp ? cspDev : cspProduction;
+    const responseHeaders = { ...details.responseHeaders };
+    for (const key of Object.keys(responseHeaders)) {
+      const lower = key.toLowerCase();
+      if (lower === 'content-security-policy' || lower === 'content-security-policy-report-only') {
+        delete responseHeaders[key];
+      }
+    }
+    responseHeaders['Content-Security-Policy'] = [policy];
+    callback({ responseHeaders });
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -241,7 +294,7 @@ function createWindow() {
       webviewTag: false,
       sandbox: true
     },
-    icon: path.join(__dirname, '../dist/favicon.ico'),
+    icon: resolveAppIconPath(),
     backgroundColor: '#1c1c1e',
     show: false
   });
@@ -290,32 +343,6 @@ function createWindow() {
     } catch (error) {
       console.error('[Electron] Navigation error:', error);
     }
-  });
-
-  const cspProduction =
-    "default-src 'self' file: data: blob:; " +
-    "script-src 'self' 'unsafe-inline' file: blob:; " +
-    "img-src 'self' data: blob: file: https:; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "connect-src 'self' file: data: blob: https: https://raw.githubusercontent.com https://api.github.com https://github.com https://objects.githubusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
-    "font-src 'self' data:;";
-
-  const cspDev =
-    "default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: blob: http: https: ws: wss:; " +
-    "img-src 'self' data: blob: file: https: http:; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' file: blob: http: https:; " +
-    "connect-src 'self' https: http: ws: wss: https://raw.githubusercontent.com https://api.github.com https://github.com https://objects.githubusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
-    "font-src 'self' data:;";
-
-  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
-    const useDevCsp = isDev && Boolean(process.env.VITE_DEV_SERVER_URL);
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [useDevCsp ? cspDev : cspProduction]
-      }
-    });
   });
 
   mainWindow.webContents.on('did-navigate', (event, url) => {
@@ -456,7 +483,7 @@ ipcMain.on('open-calendar-window', () => {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
-    icon: path.join(__dirname, '../dist/favicon.ico'),
+    icon: resolveAppIconPath(),
   });
   
   const calendarPath = path.join(__dirname, '../dist/pages/calendar/index.html');
@@ -533,6 +560,28 @@ ipcMain.handle('auth:encrypt-secret', (event, plainText) => {
   }
 });
 
+ipcMain.handle('native-notification:show', (event, payload) => {
+  try {
+    if (!Notification.isSupported()) {
+      return { ok: false, error: 'Notifications not supported' };
+    }
+    const title = String((payload && payload.title) || 'Cultiva').slice(0, 256);
+    const body = String((payload && payload.body) || '').slice(0, 2000);
+    const silent = Boolean(payload && payload.silent);
+    const iconPath = resolveAppIconPath();
+    const n = new Notification({
+      title,
+      body,
+      silent,
+      icon: iconPath
+    });
+    n.show();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e && e.message ? e.message : String(e) };
+  }
+});
+
 ipcMain.handle('auth:decrypt-secret', (event, b64) => {
   try {
     const buf = Buffer.from(String(b64), 'base64');
@@ -548,6 +597,10 @@ ipcMain.handle('auth:decrypt-secret', (event, b64) => {
 /* ============================================ */
 
 app.whenReady().then(() => {
+  if (process.platform === 'win32') {
+    app.setAppUserModelId(pkg.build && pkg.build.appId ? pkg.build.appId : 'com.cultiva.app');
+  }
+  attachSessionContentSecurityPolicy();
   initDiscordRPC();
   setupPluginIPC();
   createWindow();

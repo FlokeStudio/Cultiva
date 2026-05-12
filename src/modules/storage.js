@@ -146,7 +146,7 @@ export const storage = {
         try {
           const parsed = JSON.parse(lsBundle);
           if (parsed && typeof parsed === 'object') {
-            const flatKeys = new Set(['lang', 'theme', 'showTrophies', 'focusMode', 'holidayRegion', 'avatar', 'pluginsEnabled']);
+            const flatKeys = new Set(['lang', 'theme', 'showTrophies', 'focusMode', 'holidayRegion', 'avatar', 'pluginsEnabled', 'nativeNotifyEnabled', 'nativeNotifyHabits', 'nativeNotifyHabitsHour', 'nativeNotifyCalendar', 'nativeNotifyCalendarLeadMinutes']);
             const keys = Object.keys(parsed);
             const looksLikeFlatAppSettings = keys.some((k) => flatKeys.has(k)) && !keys.includes('cultiva-settings');
             if (looksLikeFlatAppSettings) {

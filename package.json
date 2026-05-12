@@ -8,10 +8,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "prebuild": "node scripts/sync-version.mjs",
+    "prebuild": "node scripts/sync-version.mjs && node scripts/sync-build-icon.mjs",
     "preversion": "node scripts/sync-version.mjs",
     "lint": "eslint src/ electron/",
-    "lint:fix": "eslint src/ electron/ --fix",
+    "sync-icon": "node scripts/sync-build-icon.mjs",
     "electron:dev": "npm run build && cross-env NODE_ENV=development VITE_DEV_SERVER_URL=http://localhost:3000 electron .",
     "electron:dev:watch": "concurrently \"vite\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development VITE_DEV_SERVER_URL=http://localhost:3000 electron .\"",
     "electron:clean": "node scripts/clean-electron-release.mjs",
@@ -31,7 +31,7 @@
     },
     "directories": {
       "output": "release",
-      "buildResources": "public"
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",
@@ -60,7 +60,7 @@
           ]
         }
       ],
-      "icon": "dist/favicon.ico",
+      "icon": "build/icon.ico",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "sign": null,
       "signAndEditExecutable": false,
@@ -72,6 +72,9 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Cultiva",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false
     },
