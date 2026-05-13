@@ -7,7 +7,7 @@ import { BRANDING } from './core/branding.js';
 import { habits } from './modules/habits.js';
 import { pluginManager } from './core/plugin-manager.js';
 import { initNativeNotificationsScheduler } from './core/native-notifications.js';
-import { getCultivaTimezone, getTodayInTZ, getDateInTZ } from './core/timezone.js';
+import { getCultivaTimezone } from './core/timezone.js';
 import { getThemeBodyClassList, resolveThemeBodyId } from './core/theme-config.js';
 import {
   applyAmbientBackground,
@@ -16,6 +16,14 @@ import {
   readCustomBackgroundDataUrl
 } from './core/ambient-bg.js';
 import { settings, ensureAppReady } from './app/renderer-bootstrap.js';
+import { getTodayStr } from './app/date-ui.js';
+import {
+  configureModals,
+  openModal,
+  closeModal,
+  openQuantityLogModal,
+  completeQuantityLogWithValue
+} from './app/modals.js';
 
 let currentLang = 'en';
 let currentT = TRANSLATIONS.en;
@@ -45,28 +53,13 @@ const quantityLogTitle = document.getElementById('quantity-log-title');
 const quantityLogDesc = document.getElementById('quantity-log-desc');
 const quantityLogLabel = document.getElementById('quantity-log-label');
 
-/** @type {null | ((value: number | null) => void)} */
-let quantityLogResolve = null;
-
-/* ============================================ */
-/* TIMEZONE UTILS                               */
-/* ============================================ */
-
-function getTodayStr() {
-  return getTodayInTZ();
-}
-
-function _formatCultivaDate(dateObj) {
-  const tz = getCultivaTimezone();
-  return new Intl.DateTimeFormat(navigator.language, {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', timeZone: tz
-  }).format(dateObj);
-}
-
-function _getLocalISOString(dateObj) {
-  return getDateInTZ(dateObj);
-}
+configureModals({
+  quantityLogModal,
+  quantityLogInput,
+  quantityLogTitle,
+  quantityLogDesc,
+  quantityLogLabel
+});
 
 function applyBranding() {
   document.title = `${BRANDING.APP_TITLE} | Home`;
@@ -1329,48 +1322,6 @@ function renderGarden() {
   applyTranslations(settings.lang);
 }
 
-/* ============================================ */
-/* MODALS                                       */
-/* ============================================ */
-
-function openModal(modal) { if (!modal) { return; } modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
-function closeModal(modal) {
-  if (!modal) { return; }
-  if (modal.id === 'quantity-log-modal' && quantityLogResolve) {
-    const done = quantityLogResolve;
-    quantityLogResolve = null;
-    done(null);
-  }
-  modal.classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-function openQuantityLogModal(habit, currentValue, t) {
-  return new Promise((resolve) => {
-    quantityLogResolve = resolve;
-    if (quantityLogTitle) { quantityLogTitle.textContent = habit.treeName || habit.name; }
-    if (quantityLogDesc) {
-      const goal = habits.quantityTarget(habit);
-      const bits = [`${t.goal}: ${goal}`];
-      if (habit.unit) { bits.push(String(habit.unit)); }
-      if (t.quantityLogSubtitle) { bits.push(t.quantityLogSubtitle); }
-      quantityLogDesc.textContent = bits.join(' — ');
-    }
-    if (quantityLogLabel) { quantityLogLabel.textContent = t.quantityLogLabel || t.quantityLogPrompt || 'Total for today'; }
-    if (quantityLogInput) {
-      quantityLogInput.value = String(currentValue);
-      openModal(quantityLogModal);
-      setTimeout(() => {
-        quantityLogInput.focus();
-        quantityLogInput.select();
-      }, 50);
-    } else {
-      quantityLogResolve = null;
-      resolve(null);
-    }
-  });
-}
-
 function openStats(id) {
   const s = habits.getStats(id);
   if (!s) { return; }
@@ -1808,10 +1759,7 @@ function initEvents() {
       showNotification(t.invalidQuantity || 'Enter a valid number (0 or greater)');
       return;
     }
-    const done = quantityLogResolve;
-    quantityLogResolve = null;
-    closeModal(quantityLogModal);
-    if (done) { done(parsed); }
+    completeQuantityLogWithValue(parsed);
   });
   document.getElementById('quantity-log-cancel')?.addEventListener('click', () => {
     closeModal(quantityLogModal);
