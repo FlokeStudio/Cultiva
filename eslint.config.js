@@ -45,5 +45,5 @@ export default [
     },
   },
   
-  { ignores: ['dist/**', 'release/**', 'node_modules/**', 'vite.config.js'] }
+  { ignores: ['dist/**', 'release/**', 'node_modules/**', 'vite.config.js', 'vitest.config.js'] }
 ];

@@ -153,13 +153,13 @@ function _readCultivaPayloadFromEl(t) {
 
 function _readDatasetGeoPayload(t) {
   const p = {};
-  if (t.dataset.lat != null && t.dataset.lat !== '') {
+  if (t.dataset.lat !== undefined && t.dataset.lat !== '') {
     p.lat = parseFloat(t.dataset.lat);
   }
-  if (t.dataset.lon != null && t.dataset.lon !== '') {
+  if (t.dataset.lon !== undefined && t.dataset.lon !== '') {
     p.lon = parseFloat(t.dataset.lon);
   }
-  if (t.dataset.city != null) {
+  if (t.dataset.city !== undefined) {
     p.city = t.dataset.city;
   }
   return p;
@@ -210,7 +210,7 @@ function _mountPluginMainSheet(pluginId, html) {
     if (t.dataset.station) {
       payload.stationId = t.dataset.station;
     }
-    if (t.dataset.minutes != null && t.dataset.minutes !== '') {
+    if (t.dataset.minutes !== undefined && t.dataset.minutes !== '') {
       const m = parseInt(t.dataset.minutes, 10);
       if (!Number.isNaN(m)) {
         payload.minutes = m;

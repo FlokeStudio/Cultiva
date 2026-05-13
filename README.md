@@ -23,7 +23,7 @@ Cultiva is an **offline-first desktop habit tracker** built around a simple idea
 
 ## Download
 
-**[→ Latest release](https://github.com/krwg/Cultiva/releases/latest)** · **[Release notes (0.4.0)](docs/RELEASE_0.4.0.md)**
+**[→ Latest release](https://github.com/krwg/Cultiva/releases/latest)** · **[Release notes (0.4.1)](docs/RELEASE_0.4.1.md)** · [0.4.0](docs/RELEASE_0.4.0.md)
 
 | Format | Best for |
 |--------|----------|
@@ -135,6 +135,6 @@ When Discord is running on the same machine, Cultiva can show a simple presence 
 
 <div align="center">
 
-Built with care by [krwg](https://github.com/krwg) · MIT License · «Coconut» · 0.4.0
+Built with care by [krwg](https://github.com/krwg) · MIT License · «Coconut» · 0.4.1
 
 </div>

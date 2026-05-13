@@ -92,5 +92,9 @@ plugins
 # === LOCAL WIKI (Markdown for GitHub Wiki — see docs/WIKI.md) ===
 wiki/
 
+# === LOCAL GITHUB ISSUE DRAFTS (copy into GitHub Issues) ===
+issues/
+
 PLUGIN_AUTHOR_GUIDE.md
 WIKI.md
+RELEASE_0.4.1.md
