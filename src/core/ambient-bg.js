@@ -65,6 +65,9 @@ export function applyAmbientBackground(doc, body, bg) {
   if (bg === 'petal') { generatePetals(container); }
   if (bg === 'ember') { generateEmbers(container); }
   if (bg === 'breeze') { generateBreeze(container); }
+  if (bg === 'cypress-drift') { generateCypressNeedles(container); }
+  if (bg === 'dew') { generateDew(container); }
+  if (bg === 'sunbeam') { generateSunbeams(container); }
 }
 
 export function saveCustomBackgroundFromFile(file) {
@@ -187,5 +190,42 @@ function generateBreeze(container) {
     b.style.animationDuration = `${10 + Math.random() * 14}s`;
     b.style.transform = `rotate(${-15 + Math.random() * 30}deg)`;
     container.appendChild(b);
+  }
+}
+
+function generateCypressNeedles(container) {
+  container.innerHTML = '';
+  for (let i = 0; i < 48; i++) {
+    const n = document.createElement('div');
+    n.className = 'cypress-needle';
+    n.style.left = `${Math.random() * 100}%`;
+    n.style.animationDelay = `${Math.random() * 14}s`;
+    n.style.animationDuration = `${12 + Math.random() * 16}s`;
+    n.style.setProperty('--sway', `${(Math.random() - 0.5) * 60}px`);
+    container.appendChild(n);
+  }
+}
+
+function generateDew(container) {
+  container.innerHTML = '';
+  for (let i = 0; i < 55; i++) {
+    const d = document.createElement('div');
+    d.className = 'dew-drop';
+    d.style.left = `${Math.random() * 100}%`;
+    d.style.top = `${Math.random() * 100}%`;
+    d.style.animationDelay = `${Math.random() * 6}s`;
+    d.style.animationDuration = `${3 + Math.random() * 5}s`;
+    container.appendChild(d);
+  }
+}
+
+function generateSunbeams(container) {
+  container.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const beam = document.createElement('div');
+    beam.className = 'sunbeam-ray';
+    beam.style.left = `${10 + i * 14}%`;
+    beam.style.animationDelay = `${i * 1.2}s`;
+    container.appendChild(beam);
   }
 }

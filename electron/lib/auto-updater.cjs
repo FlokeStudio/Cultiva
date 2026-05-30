@@ -19,7 +19,7 @@ function setupAutoUpdater(getMainWindow) {
 
   autoUpdater.setFeedURL({
     provider: 'generic',
-    url: 'https://github.com/krwg/Cultiva/releases/latest/download/'
+    url: 'https://github.com/FlokeStudio/Cultiva/releases/latest/download/'
   });
   autoUpdater.allowPrerelease = true;
 

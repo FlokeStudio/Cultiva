@@ -5,10 +5,10 @@
 
 **A gamified habit tracker where consistency isn’t tracked — it’s grown.**
 
-[![Release](https://img.shields.io/github/v/release/krwg/Cultiva?style=flat-square&color=34c759&label=latest)](https://github.com/krwg/Cultiva/releases/latest)
-[![License](https://img.shields.io/github/license/krwg/Cultiva?style=flat-square&color=af52de)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0071e3?style=flat-square&logo=windows&logoColor=white)](https://github.com/krwg/Cultiva/releases/latest)
-[![Stars](https://img.shields.io/github/stars/krwg/Cultiva?style=flat-square&color=ffcc00)](https://github.com/krwg/Cultiva/stargazers)
+[![Release](https://img.shields.io/github/v/release/FlokeStudio/Cultiva?style=flat-square&color=34c759&label=latest)](https://github.com/FlokeStudio/Cultiva/releases/latest)
+[![License](https://img.shields.io/github/license/FlokeStudio/Cultiva?style=flat-square&color=af52de)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0071e3?style=flat-square&logo=windows&logoColor=white)](https://github.com/FlokeStudio/Cultiva/releases/latest)
+[![Stars](https://img.shields.io/github/stars/FlokeStudio/Cultiva?style=flat-square&color=ffcc00)](https://github.com/FlokeStudio/Cultiva/stargazers)
 [![Discord](https://img.shields.io/badge/discord-rich%20presence-5865F2?style=flat-square&logo=discord&logoColor=white)](#discord-rich-presence)
 
 </div>
@@ -23,7 +23,7 @@ Cultiva is an **offline-first desktop habit tracker** built around a simple idea
 
 ## Download
 
-**[→ Latest release](https://github.com/krwg/Cultiva/releases/latest)** · **[Release notes (0.4.1)](docs/RELEASE_0.4.1.md)** · [0.4.0](docs/RELEASE_0.4.0.md)
+**[→ Latest release](https://github.com/FlokeStudio/Cultiva/releases/latest)** · **[Release notes (1.1.0 · Cypress)](docs/release-notes-v1.1.0-cypress-github.md)** · [0.4.1](docs/RELEASE_0.4.1.md) · [0.4.0](docs/RELEASE_0.4.0.md)
 
 | Format | Best for |
 |--------|----------|

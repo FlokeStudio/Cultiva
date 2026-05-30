@@ -32,9 +32,13 @@ import {
   applySettings,
   updateNotificationsDesktopBanner
 } from './app/settings-controller.js';
+import { initHotkeys } from './app/hotkeys.js';
+import { applyAccentColor, applyAmbientIntensity } from './core/customization.js';
 
 let currentLang = 'en';
 let currentT = TRANSLATIONS.en;
+let habitSearchQuery = '';
+let focusedHabitId = null;
 
 /* ============================================ */
 /* DOM ELEMENTS                                 */
@@ -726,19 +730,55 @@ function createHabitCard(habit, isTrophy = false) {
   return card;
 }
 
+function filterHabits(list) {
+  const q = habitSearchQuery.trim().toLowerCase();
+  if (!q) {
+    return list;
+  }
+  return list.filter((h) => {
+    const name = (h.name || '').toLowerCase();
+    const desc = (h.description || '').toLowerCase();
+    const cat = (h.category || '').toLowerCase();
+    return name.includes(q) || desc.includes(q) || cat.includes(q);
+  });
+}
+
+function getFocusedHabit() {
+  const all = filterHabits(habits.getAll().filter((h) => h.progress < LEGACY_THRESHOLD));
+  if (focusedHabitId) {
+    const hit = all.find((h) => h.id === focusedHabitId);
+    if (hit) {
+      return hit;
+    }
+  }
+  return all[0] || null;
+}
+
 function renderGarden() {
   const all = habits.getAll();
-  const active = all.filter(h => h.progress < LEGACY_THRESHOLD);
+  const active = filterHabits(all.filter(h => h.progress < LEGACY_THRESHOLD));
   const trophies = all.filter(h => h.progress >= LEGACY_THRESHOLD);
   const t = TRANSLATIONS[settings.lang];
+  if (!focusedHabitId && active[0]) {
+    focusedHabitId = active[0].id;
+  } else if (focusedHabitId && !active.some((h) => h.id === focusedHabitId)) {
+    focusedHabitId = active[0]?.id || null;
+  }
     
   if (gardenEl) {
     gardenEl.innerHTML = '';
     if (active.length === 0) {
-      gardenEl.innerHTML = `<div class="empty-state"><p style="font-size:40px">🌱</p><p data-i18n="emptyGarden">${t.emptyGarden}</p><button class="btn-primary" id="add-first" style="width:auto;padding:10px 20px;margin-top:16px" data-i18n="plantFirst">${t.plantFirst}</button></div>`;
+      const emptyMsg = habitSearchQuery.trim() ? (t.searchEmpty || 'No habits match your search') : t.emptyGarden;
+      gardenEl.innerHTML = `<div class="empty-state"><p style="font-size:40px">🌱</p><p>${emptyMsg}</p>${habitSearchQuery.trim() ? '' : `<button class="btn-primary" id="add-first" style="width:auto;padding:10px 20px;margin-top:16px" data-i18n="plantFirst">${t.plantFirst}</button>`}</div>`;
       document.getElementById('add-first')?.addEventListener('click', () => openModal(addModal));
     } else {
-      active.forEach(h => gardenEl.appendChild(createHabitCard(h)));
+      active.forEach(h => {
+        const card = createHabitCard(h);
+        if (h.id === focusedHabitId) {
+          card.classList.add('habit-card--focus');
+        }
+        gardenEl.appendChild(card);
+      });
     }
   }
   if (trophyEl) {
@@ -781,13 +821,32 @@ function openStats(id) {
 
 function exportData() {
   const t = TRANSLATIONS[settings.lang];
-  const data = { habits: habits.getAll(), exportedAt: new Date().toISOString(), version: BRANDING.VERSION };
+  const data = { habits: habits.getAll(), settings, exportedAt: new Date().toISOString(), version: BRANDING.VERSION };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `${BRANDING.BACKUP_PREFIX}-${getTodayStr()}.json`;
   a.click(); URL.revokeObjectURL(url);
   showNotification(t.exported);    
+}
+
+async function exportZip() {
+  const t = TRANSLATIONS[settings.lang];
+  const payload = {
+    habits: habits.getAll(),
+    settings,
+    exportedAt: new Date().toISOString(),
+    version: BRANDING.VERSION
+  };
+  const name = `${BRANDING.BACKUP_PREFIX}-${getTodayStr()}.zip`;
+  if (window.electron?.exportBackupZip) {
+    const r = await window.electron.exportBackupZip(JSON.stringify(payload), name);
+    if (r?.success) {
+      showNotification(t.exportedZip || t.exported);
+    }
+    return;
+  }
+  exportData();
 }
 
 function importData(file) {
@@ -883,7 +942,7 @@ function updateUpdatesSection() {
     
   document.getElementById('view-releases-link')?.addEventListener('click', (e) => {
     e.preventDefault();
-    window.open('https://github.com/krwg/Cultiva/releases', '_blank');
+    window.open('https://github.com/FlokeStudio/Cultiva/releases', '_blank');
   });
 }
 
@@ -946,7 +1005,7 @@ async function fetchReleaseInfo() {
   }
     
   try {
-    const response = await fetch('https://api.github.com/repos/krwg/Cultiva/releases');
+    const response = await fetch('https://api.github.com/repos/FlokeStudio/Cultiva/releases');
         
     if (!response.ok) {
       throw new Error(`GitHub API error: ${response.status}`);
@@ -975,7 +1034,7 @@ async function fetchReleaseInfo() {
     releaseInfo.innerHTML = `
             <div class="release-loading">
                 Failed to load releases<br>
-                <a href="#" onclick="window.open('https://github.com/krwg/Cultiva/releases', '_blank'); return false;" style="color: var(--accent-blue);">
+                <a href="#" onclick="window.open('https://github.com/FlokeStudio/Cultiva/releases', '_blank'); return false;" style="color: var(--accent-blue);">
                     View on GitHub →
                 </a>
             </div>
@@ -1225,6 +1284,7 @@ function initEvents() {
     const card = e.target.closest('.habit-card');
     if (!card) { return; }
     const id = card.dataset.id;
+    focusedHabitId = id;
     if (e.target.closest('.btn-card-primary')) {
       e.stopPropagation();
       const h = habits.getAll().find(x => x.id === id);
@@ -1273,6 +1333,7 @@ function initEvents() {
   document.getElementById('close-settings')?.addEventListener('click', () => closeModal(settingsModal));
   document.getElementById('close-stats')?.addEventListener('click', () => closeModal(statsModal));
   document.getElementById('settings-export')?.addEventListener('click', exportData);
+  document.getElementById('settings-export-zip')?.addEventListener('click', () => { exportZip(); });
   document.getElementById('settings-import')?.addEventListener('click', () => {
     const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
     input.onchange = (e) => { if (e.target.files?.[0]) { importData(e.target.files[0]); } };
@@ -1507,6 +1568,64 @@ async function init() {
     renderPluginHeaderItems();
 
     initNativeNotificationsScheduler(() => settings);
+
+    const habitSearch = document.getElementById('habit-search');
+    habitSearch?.addEventListener('input', (e) => {
+      habitSearchQuery = e.target.value;
+      renderGarden();
+    });
+
+    document.getElementById('accent-color-input')?.addEventListener('input', (e) => {
+      settings.accentColor = e.target.value;
+      applyAccentColor(settings.accentColor);
+      saveSettings();
+    });
+    document.getElementById('accent-color-reset')?.addEventListener('click', () => {
+      settings.accentColor = '';
+      applyAccentColor('');
+      const inp = document.getElementById('accent-color-input');
+      if (inp) {
+        inp.value = '#5a9a72';
+      }
+      saveSettings();
+    });
+    document.getElementById('ambient-intensity')?.addEventListener('input', (e) => {
+      settings.ambientIntensity = parseInt(e.target.value, 10);
+      applyAmbientIntensity(settings.ambientIntensity);
+      const bg = localStorage.getItem('cultiva-background') || 'none';
+      applyAmbientBackground(document, document.body, bg);
+      saveSettings();
+    });
+
+    initHotkeys({
+      openAddModal: () => openModal(addModal),
+      openSettings: () => openModal(settingsModal),
+      focusSearch: () => document.getElementById('habit-search')?.focus(),
+      completeHighlighted: () => {
+        const h = getFocusedHabit();
+        if (h) {
+          habits.toggle(h.id);
+          renderGarden();
+          showNotification(TRANSLATIONS[settings.lang].progressSaved);
+        }
+      },
+      logQuantityHighlighted: () => {
+        const h = getFocusedHabit();
+        if (h?.trackType === 'quantity') {
+          openQuantityLogModal(h);
+        }
+      },
+      closeTopModal: () => {
+        [addModal, statsModal, settingsModal, quantityLogModal, authModal].forEach((m) => {
+          if (m && m.classList.contains('open')) {
+            closeModal(m);
+          }
+        });
+      }
+    });
+
+    applyAccentColor(settings.accentColor);
+    applyAmbientIntensity(settings.ambientIntensity);
     
     console.log(`[App] Cultiva [${BRANDING.VERSION}] initialized successfully`);
   } catch (err) {

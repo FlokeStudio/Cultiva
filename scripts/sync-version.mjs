@@ -1,32 +1,24 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const brandingPath = resolve('src/core/branding.js');
-const packagePath = resolve('package.json');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const releasePath = resolve(root, 'cultiva.release.json');
+const brandingPath = resolve(root, 'src/core/branding.js');
+const packagePath = resolve(root, 'package.json');
 
-try {
+const release = JSON.parse(readFileSync(releasePath, 'utf-8'));
+const { version, codename } = release;
 
-  const content = readFileSync(brandingPath, 'utf-8');
-  const versionMatch = content.match(/VERSION:\s*['"]([^'"]+)['"]/);
-  const codenameMatch = content.match(/CODENAME:\s*['"]([^'"]+)['"]/);
+let branding = readFileSync(brandingPath, 'utf-8');
+branding = branding.replace(/VERSION:\s*['"][^'"]+['"]/, `VERSION: '${version}'`);
+branding = branding.replace(/CODENAME:\s*['"][^'"]+['"]/, `CODENAME: '${codename}'`);
+writeFileSync(brandingPath, branding);
 
-  if (!versionMatch || !codenameMatch) {
-    console.error('Не найдены VERSION или CODENAME в branding.js');
-    process.exit(1);
-  }
-
-  const newVersion = versionMatch[1];
-  const pkg = JSON.parse(readFileSync(packagePath, 'utf-8'));
-
-  if (pkg.version !== newVersion) {
-    pkg.version = newVersion;
-    pkg.description = pkg.description || `${codenameMatch[1]} Release`;
-    writeFileSync(packagePath, JSON.stringify(pkg, null, 2) + '\n');
-    console.log(`package.json обновлен: v${newVersion} (${codenameMatch[1]})`);
-  } else {
-    console.log(`Версия уже актуальна: v${newVersion}`);
-  }
-} catch (err) {
-  console.error('Ошибка синхронизации версий:', err.message);
-  process.exit(1);
+const pkg = JSON.parse(readFileSync(packagePath, 'utf-8'));
+if (pkg.version !== version) {
+  pkg.version = version;
+  writeFileSync(packagePath, JSON.stringify(pkg, null, 2) + '\n');
 }
+
+console.log(`[sync-version] ${release.name} ${version} · ${codename}`);

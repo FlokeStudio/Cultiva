@@ -1,6 +1,6 @@
 import { storage } from './storage.js';
 import { GROWTH_STAGES, LEGACY_THRESHOLD, MAX_ACTIVE_HABITS } from '../core/config.js';
-import { getCultivaTimezone, getTodayInTZ, getDateInTZ } from '../core/timezone.js';
+import { getTodayInTZ, getDateInTZ } from '../core/timezone.js';
 
 /* ============================================ */
 /* HABITS CORE                                  */
@@ -66,9 +66,6 @@ export const habits = {
     if (!habit) {return null;}
     
     const today = getTodayInTZ();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = getDateInTZ(yesterday);
 
     if (habit.trackType === 'quantity') {
       const current = this.quantityDayProgress(habit, today);
@@ -122,7 +119,6 @@ export const habits = {
     
     let currentStreak = 0;
     const checkDate = new Date();
-    const tz = getCultivaTimezone();
     
     while (true) {
       const dateStr = getDateInTZ(checkDate);
@@ -218,8 +214,7 @@ export const habits = {
   getCalendarData(id) {
     const h = this.getAll().find(x => x.id === id);
     if (!h) {return [];}
-    
-    const today = new Date();
+
     const start = new Date();
     start.setDate(start.getDate() - 364);
     

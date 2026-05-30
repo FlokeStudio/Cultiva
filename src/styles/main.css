@@ -1404,7 +1404,58 @@ select.select-input optgroup {
     font-size: 13px;
     text-align: center;
     color: var(--text-tertiary);
+    margin-bottom: 8px;
+}
+
+.about-stack {
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 12px 0 24px;
+    text-align: center;
+}
+
+.about-app-tagline {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px;
+    line-height: 1.45;
+}
+
+.about-meta {
+    border: 1px solid var(--border-subtle, rgba(128, 128, 128, 0.2));
+    border-radius: 12px;
+    overflow: hidden;
     margin-bottom: 20px;
+    text-align: left;
+}
+
+.about-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-subtle, rgba(128, 128, 128, 0.15));
+}
+
+.about-meta-row:last-child {
+    border-bottom: none;
+}
+
+.about-meta-row span:first-child {
+    color: var(--text-tertiary);
+}
+
+.about-meta-row span:last-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.about-github-btn {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 200px;
+    text-decoration: none;
 }
 
 /* ============================================ */
@@ -2435,6 +2486,167 @@ body.theme-sequoia {
     --calendar-2: #5a4838;
     --calendar-3: #8a7058;
     --calendar-4: #c4956a;
+}
+
+/* ============================================ */
+/* CYPRESS (Кипарис) — тёмная зелень, медiterranean */
+/* ============================================ */
+
+body.theme-cypress {
+    --bg-primary: #0f1812;
+    --bg-secondary: #152019;
+    --bg-tertiary: #1c2a22;
+    --bg-quaternary: #24362b;
+    --text-primary: #e8f0ea;
+    --text-secondary: #a8bdb0;
+    --text-tertiary: #6d8578;
+    --border-light: #2a4034;
+    --border-medium: #3d5548;
+    --accent-blue: #5a9a72;
+    --accent-blue-hover: #6fb088;
+    --accent-purple: #4a8068;
+    --accent-pink: #c9a882;
+    --accent-green: #4ade80;
+    --accent-red: #e06050;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.5);
+    --calendar-0: #152019;
+    --calendar-1: #24362b;
+    --calendar-2: #3d5548;
+    --calendar-3: #5a9a72;
+    --calendar-4: #8fd4a8;
+}
+
+:root {
+    --ambient-intensity: 1;
+}
+
+body.with-ambient-bg > [class^="bg-"],
+body.with-ambient-bg > [id^="bg-"] {
+    opacity: calc(0.35 + 0.65 * var(--ambient-intensity, 1));
+}
+
+.habit-search-wrap {
+    flex: 1;
+    max-width: 220px;
+    min-width: 120px;
+}
+
+.habit-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.habit-search-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(90, 154, 114, 0.25);
+}
+
+.habit-card.habit-card--focus {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+.bg-cypress-drift {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: linear-gradient(180deg, #0a1210 0%, #152019 50%, #1a2820 100%);
+    overflow: hidden;
+}
+
+.bg-cypress-drift .cypress-needle {
+    position: absolute;
+    top: -4vh;
+    width: 3px;
+    height: 14px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #3d6b52, #2a4a38);
+    opacity: 0.75;
+    animation: cypressFall linear infinite;
+    pointer-events: none;
+}
+
+@keyframes cypressFall {
+    0% { transform: translateY(-5vh) translateX(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.85; }
+    100% { transform: translateY(110vh) translateX(var(--sway, 0px)) rotate(180deg); opacity: 0; }
+}
+
+.bg-dew {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: linear-gradient(165deg, #1a2830 0%, #2a3d48 40%, #1e3038 100%);
+    overflow: hidden;
+}
+
+.bg-dew .dew-drop {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(160,210,230,0.35));
+    animation: dewPulse ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes dewPulse {
+    0%, 100% { transform: scale(0.6); opacity: 0.3; }
+    50% { transform: scale(1); opacity: 0.9; }
+}
+
+.bg-sunbeam {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: linear-gradient(180deg, #1a2418 0%, #2a3820 55%, #1a2010 100%);
+    overflow: hidden;
+}
+
+.bg-sunbeam .sunbeam-ray {
+    position: absolute;
+    top: -10%;
+    width: 8%;
+    height: 120%;
+    background: linear-gradient(180deg, rgba(255,236,180,0.18), transparent 70%);
+    transform-origin: top center;
+    animation: sunbeamSway 18s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes sunbeamSway {
+    0%, 100% { transform: rotate(-8deg); opacity: 0.5; }
+    50% { transform: rotate(8deg); opacity: 0.85; }
+}
+
+.accent-color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.accent-color-row input[type="color"] {
+    width: 44px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    cursor: pointer;
+    background: transparent;
+}
+
+.intensity-slider {
+    width: 100%;
+    max-width: 200px;
 }
 
 /* ============================================ */

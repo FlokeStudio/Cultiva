@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electron', {
   restartApp: () => ipcRenderer.send('restart-app'),
   getAppPath: () => ipcRenderer.invoke('get-app-path'),
   saveFile: (data, fileName) => ipcRenderer.invoke('save-file', data, fileName),
+  exportBackupZip: (jsonPayload, fileName) => ipcRenderer.invoke('backup:export-zip', jsonPayload, fileName),
   isElectron: true,
   readPluginFile: (filePath) => ipcRenderer.invoke('plugin:read-file', filePath),
   /** @param {{ title?: string, body?: string, silent?: boolean }} payload */

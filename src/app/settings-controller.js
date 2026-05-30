@@ -2,6 +2,7 @@ import { getThemeBodyClassList, resolveThemeBodyId } from '../core/theme-config.
 import { storage } from '../modules/storage.js';
 import { settings, ensureAppReady } from './renderer-bootstrap.js';
 import { applyTranslations } from './i18n-dom.js';
+import { applyAccentColor, applyAmbientIntensity } from '../core/customization.js';
 
 /**
  * @typedef {object} SettingsControllerContext
@@ -86,6 +87,15 @@ export async function loadSettings() {
         const m = parseInt(String(saved.nativeNotifyCalendarLeadMinutes), 10);
         if (!Number.isNaN(m)) {
           settings.nativeNotifyCalendarLeadMinutes = Math.max(5, Math.min(120, m));
+        }
+      }
+      if (typeof saved.accentColor === 'string') {
+        settings.accentColor = saved.accentColor;
+      }
+      if (saved.ambientIntensity !== undefined && saved.ambientIntensity !== null) {
+        const ai = parseInt(String(saved.ambientIntensity), 10);
+        if (!Number.isNaN(ai)) {
+          settings.ambientIntensity = Math.max(0, Math.min(100, ai));
         }
       }
     }
@@ -204,6 +214,18 @@ export function applySettings() {
 
   refreshNativeNotificationControlsState();
   updateNotificationsDesktopBanner();
+
+  applyAccentColor(settings.accentColor);
+  applyAmbientIntensity(settings.ambientIntensity);
+
+  const accentInput = document.getElementById('accent-color-input');
+  if (accentInput && settings.accentColor) {
+    accentInput.value = settings.accentColor;
+  }
+  const intensitySlider = document.getElementById('ambient-intensity');
+  if (intensitySlider) {
+    intensitySlider.value = String(settings.ambientIntensity ?? 100);
+  }
 
   c.renderHeaderAvatar();
 

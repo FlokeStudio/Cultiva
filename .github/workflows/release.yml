@@ -25,6 +25,9 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
+
+      - name: Run unit tests
+        run: npm run test
         
       - name: Build Vite
         run: npm run build
@@ -43,12 +46,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            release/*.exe
-            release/*.yml
+            release/Cultiva-Setup-*.exe
+            release/Cultiva-Portable-*.exe
+            release/latest.yml
             release/*.blockmap
           draft: false
           prerelease: false
-          generate_release_notes: true
+          body_path: docs/release-notes-v1.1.0-cypress-github.md
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

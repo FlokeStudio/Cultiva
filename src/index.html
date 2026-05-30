@@ -25,6 +25,9 @@
                 <h1><a href="./index.html">Cultiva</a></h1>
             </div>
             <div class="header-actions">
+                <div class="habit-search-wrap">
+                    <input type="search" id="habit-search" class="habit-search-input" data-i18n-placeholder="searchHabitsPlaceholder" placeholder="Search habits…" autocomplete="off" aria-label="Search habits">
+                </div>
                 <a href="./pages/calendar/index.html" class="header-link" data-i18n="calendar" title="Calendar">Calendar</a>
                 <button class="add-btn" id="open-add-modal" aria-label="Add new habit">+</button>
                 
@@ -235,51 +238,51 @@
                 <!-- SIDEBAR -->
                 <div class="settings-sidebar" id="settings-sidebar">
                     <div class="settings-sidebar-item active" data-section="profile">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">◉</span></div>
                         <span class="sidebar-label" data-i18n="profile">Profile</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="appearance">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">◑</span></div>
                         <span class="sidebar-label" data-i18n="appearance">Appearance</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="notifications">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">◎</span></div>
                         <span class="sidebar-label" data-i18n="notifications">Notifications</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="shortcuts">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">⌁</span></div>
                         <span class="sidebar-label" data-i18n="shortcuts">Keyboard</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="garden">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">✻</span></div>
                         <span class="sidebar-label" data-i18n="gardenSettings">Garden</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="calendar">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">⊞</span></div>
                         <span class="sidebar-label" data-i18n="calendarTime">Calendar</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="discord">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">◈</span></div>
                         <span class="sidebar-label" data-i18n="discord">Discord</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="data">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">▤</span></div>
                         <span class="sidebar-label" data-i18n="dataStorage">Data</span>
                     </div>
                     <div class="settings-sidebar-item" data-section="updates">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">↻</span></div>
                         <span class="sidebar-label" data-i18n="updates">Updates</span>
                     </div>
 
                     <div class="settings-sidebar-item" data-section="plugins">
                         <div class="sidebar-icon-wrapper">
-                        <span class="sidebar-icon"></span>
+                        <span class="sidebar-icon" aria-hidden="true">◇</span>
                         </div>
                         <span class="sidebar-label" data-i18n="plugins">Plugins</span>
                     </div>
 
                     <div class="settings-sidebar-item" data-section="about">
-                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon"></span></div>
+                        <div class="sidebar-icon-wrapper"><span class="sidebar-icon" aria-hidden="true">ℹ</span></div>
                         <span class="sidebar-label" data-i18n="aboutHelp">About</span>
                     </div>
                 </div>
@@ -289,7 +292,7 @@
                     
                     <!-- EMPTY STATE -->
                     <div class="settings-empty-state" id="settings-empty">
-                        <div class="empty-state-icon">⚙️</div>
+                        <div class="empty-state-icon" aria-hidden="true">◎</div>
                         <div class="empty-state-title" data-i18n="selectSetting">Select a setting</div>
                         <div class="empty-state-desc" data-i18n="selectSettingDesc">Choose a category from the sidebar</div>
                     </div>
@@ -382,6 +385,7 @@
                                         <option value="dusk" data-i18n="themeDusk">Dusk</option>
                                         <option value="inkwell" data-i18n="themeInkwell">Inkwell</option>
                                         <option value="sequoia" data-i18n="themeSequoia">Sequoia</option>
+                                        <option value="cypress" data-i18n="themeCypress">Cypress</option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -404,6 +408,9 @@
                                     <option value="mist" data-i18n="backgroundMist">Silicon Mist</option>
                                     <option value="ember" data-i18n="backgroundEmber">Ember Glow</option>
                                     <option value="breeze" data-i18n="backgroundBreeze">Breeze Glass</option>
+                                    <option value="cypress-drift" data-i18n="backgroundCypressDrift">Cypress Drift</option>
+                                    <option value="dew" data-i18n="backgroundDew">Morning Dew</option>
+                                    <option value="sunbeam" data-i18n="backgroundSunbeam">Canopy Sunbeam</option>
                                     <option value="custom" data-i18n="backgroundCustom">My Photo…</option>
                                 </select>
                             </div>
@@ -419,13 +426,33 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="settings-group-card">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="accentColor">Accent color</span>
+                                    <span class="setting-desc" data-i18n="accentColorDesc">Override buttons and highlights (optional).</span>
+                                </div>
+                                <div class="accent-color-row">
+                                    <input type="color" id="accent-color-input" value="#5a9a72" aria-label="Accent color">
+                                    <button type="button" class="btn-ghost-small" id="accent-color-reset" data-i18n="accentColorReset">Default</button>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label" data-i18n="ambientIntensity">Ambient intensity</span>
+                                    <span class="setting-desc" data-i18n="ambientIntensityDesc">Fade animated backgrounds without turning them off.</span>
+                                </div>
+                                <input type="range" id="ambient-intensity" class="intensity-slider" min="0" max="100" value="100" aria-label="Ambient intensity">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- SHORTCUTS (reference only) -->
+                    <!-- SHORTCUTS -->
                     <div class="settings-section-content" id="section-shortcuts">
                         <div class="settings-section-hero">
                             <div class="settings-section-hero-title" data-i18n="shortcutsSectionTitle">Keyboard shortcuts</div>
-                            <p class="settings-section-hero-desc" data-i18n="shortcutsSectionDesc">Planned shortcuts for a future release. Listed here as a reference — they are not active yet.</p>
+                            <p class="settings-section-hero-desc" data-i18n="shortcutsSectionDescActive">Shortcuts work globally except when typing in a field. Escape closes the top modal.</p>
                         </div>
                         <div class="settings-group-card">
                             <div class="shortcut-row">
@@ -602,6 +629,13 @@
                                 <span class="setting-desc" data-i18n="exportDesc">Download backup as JSON</span>
                             </div>
                             <button class="btn-small" id="settings-export" data-i18n="exportBtn">Export</button>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <span class="setting-label" data-i18n="exportZip">Export archive</span>
+                                <span class="setting-desc" data-i18n="exportZipDesc">Habits + settings in one .zip file</span>
+                            </div>
+                            <button class="btn-small" id="settings-export-zip" data-i18n="exportZipBtn">Export ZIP</button>
                         </div>
                         <div class="setting-item">
                             <div class="setting-info">
@@ -807,20 +841,26 @@
 
                     <!-- ABOUT SECTION -->
                     <div class="settings-section-content" id="section-about">
-                        <div class="about-app-icon">
-                            <img src="./images/favicon.ico" class="about-icon-img" alt="Cultiva" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                            <span class="about-icon-fallback">🌱</span>
-                        </div>
-                        <div class="about-app-name">Cultiva</div>
-                        <div class="about-app-version" id="about-version-display">Version [0.4.1] Coconut</div>
-                        <div class="settings-divider"></div>
-                        <a href="https://github.com/krwg/Cultiva" target="_blank" class="setting-item setting-item-link">
-                            <div class="setting-info">
-                                <span class="setting-label">GitHub</span>
-                                <span class="setting-desc">krwg/Cultiva</span>
+                        <div class="about-stack">
+                            <div class="about-app-icon">
+                                <img src="./images/favicon.ico" class="about-icon-img" alt="Cultiva" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <span class="about-icon-fallback" aria-hidden="true">◆</span>
                             </div>
-                            <span class="section-chevron">›</span>
-                        </a>
+                            <div class="about-app-name">Cultiva</div>
+                            <div class="about-app-version" id="about-version-display">Version [1.1.0] Cypress</div>
+                            <p class="about-app-tagline" data-i18n="aboutTagline">Grow your habits. Grow yourself.</p>
+                            <div class="about-meta">
+                                <div class="about-meta-row">
+                                    <span data-i18n="aboutLicense">License</span>
+                                    <span>GPL-3.0</span>
+                                </div>
+                                <div class="about-meta-row">
+                                    <span data-i18n="aboutMade">Made by</span>
+                                    <span>Floke Studio</span>
+                                </div>
+                            </div>
+                            <a href="https://github.com/FlokeStudio/Cultiva" target="_blank" rel="noopener noreferrer" class="btn-primary about-github-btn" data-i18n="aboutGitHub">GitHub repository</a>
+                        </div>
                     </div>
                     
                 </div>
@@ -968,8 +1008,6 @@
         <div class="footer-content">
             <nav class="footer-links">
                 <a href="./index.html" data-i18n="footerHome">Home</a>
-                <a href="https://krwg.github.io/Cultiva/" data-i18n="dev">Dev</a>                
-                <a href="https://github.com/krwg/Cultiva" target="_blank">GitHub</a>
             </nav>
             <div class="footer-brand"><span class="footer-version"></span></div>
         </div>
@@ -985,6 +1023,9 @@
         <div class="bg-mist" id="bg-mist" style="display:none;"></div>
         <div class="bg-ember" id="bg-ember" style="display:none;"></div>
         <div class="bg-breeze" id="bg-breeze" style="display:none;"></div>
+        <div class="bg-cypress-drift" id="bg-cypress-drift" style="display:none;"></div>
+        <div class="bg-dew" id="bg-dew" style="display:none;"></div>
+        <div class="bg-sunbeam" id="bg-sunbeam" style="display:none;"></div>
         <div class="bg-custom" id="bg-custom" style="display:none;" aria-hidden="true"></div>
 
     <script type="module" src="main.js"></script>

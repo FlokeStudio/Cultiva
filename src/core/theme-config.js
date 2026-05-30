@@ -6,7 +6,7 @@
 export const THEME_BODY_IDS = [
   'light', 'dark', 'pink', 'moon', 'evergreen', 'blossom', 'ocean', 'sunset',
   'frost', 'cedar', 'dusk', 'meadow',
-  'orchard', 'honeycrisp', 'inkwell', 'sequoia'
+  'orchard', 'honeycrisp', 'inkwell', 'sequoia', 'cypress'
 ];
 
 /** Light appearance presets (optgroup). */
@@ -16,13 +16,14 @@ export const THEMES_LIGHT_GROUP = [
 
 /** Dark appearance presets (optgroup). */
 export const THEMES_DARK_GROUP = [
-  'dark', 'evergreen', 'ocean', 'sunset', 'pink', 'moon', 'dusk', 'inkwell', 'sequoia'
+  'dark', 'evergreen', 'ocean', 'sunset', 'pink', 'moon', 'dusk', 'inkwell', 'sequoia', 'cypress'
 ];
 
 /** Layer elements #bg-{id} (animated + custom). */
 export const AMBIENT_BG_LAYER_IDS = [
   'aurora', 'rainfall', 'starlight', 'snowfall', 'fireflies',
-  'petal', 'mist', 'ember', 'breeze'
+  'petal', 'mist', 'ember', 'breeze',
+  'cypress-drift', 'dew', 'sunbeam'
 ];
 
 export const LS_CUSTOM_BG_DATA = 'cultiva-custom-bg-data';
